@@ -39,11 +39,7 @@ class SignalGenerator(object):
         sample_data = itertools.islice(sample_data, 0, sample_count)
 
         data = array.array(array_type, sample_data)
-
-        try:
-            data = data.tobytes()
-        except:
-            data = data.tostring()
+        data = data.tobytes()
 
         return AudioSegment(
             data=data,

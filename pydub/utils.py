@@ -14,7 +14,7 @@ from warnings import warn
 try:
     import audioop
 except ImportError:
-    pass
+    from . import pyaudioop as audioop
 
 if sys.version_info >= (3, 0):
     basestring = str

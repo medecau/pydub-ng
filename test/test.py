@@ -1104,7 +1104,7 @@ class AudioSegmentTests(unittest.TestCase):
                 CouldntDecodeError, AudioSegment.from_file, tmp_wav_file.name
             )
             files = os.listdir(tempfile.tempdir)
-            self.assertEquals(files, [os.path.basename(tmp_wav_file.name)])
+            self.assertEqual(files, [os.path.basename(tmp_wav_file.name)])
 
         if sys.platform == "win32":
             os.remove(tmp_wav_file.name)
@@ -1126,7 +1126,7 @@ class SilenceTests(unittest.TestCase):
 
     def test_split_on_silence_complete_silence(self):
         seg = AudioSegment.silent(5000)
-        self.assertEquals(split_on_silence(seg), [])
+        self.assertEqual(split_on_silence(seg), [])
 
     def test_split_on_silence_test1(self):
         self.assertEqual(
@@ -1475,9 +1475,4 @@ class PartialAudioSegmentLoadTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    import sys
-
-    if sys.version_info >= (3, 1):
-        unittest.main(warnings="ignore")
-    else:
-        unittest.main()
+    unittest.main(warnings="ignore")

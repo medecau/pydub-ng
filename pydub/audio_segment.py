@@ -8,22 +8,8 @@ import subprocess
 import sys
 import wave
 from collections import namedtuple
-from tempfile import NamedTemporaryFile
-
-from .logging_utils import log_conversion, log_subprocess_output
-from .utils import fsdecode, mediainfo_json
-
-try:
-    from StringIO import StringIO
-except:
-    from io import StringIO
-
 from io import BytesIO
-
-try:
-    from itertools import izip
-except:
-    izip = zip
+from tempfile import NamedTemporaryFile
 
 from .exceptions import (
     CouldntDecodeError,
@@ -34,19 +20,22 @@ from .exceptions import (
     MissingAudioParameter,
     TooManyMissingFrames,
 )
+from .logging_utils import log_conversion, log_subprocess_output
 from .utils import (
     _fd_or_path_or_tempfile,
     audioop,
     db_to_float,
+    fsdecode,
     get_array_type,
     get_encoder_name,
+    mediainfo_json,
     ratio_to_db,
 )
 
 if sys.version_info >= (3, 0):
     basestring = str
     xrange = range
-    StringIO = BytesIO
+
 
 
 class ClassPropertyDescriptor(object):
@@ -189,10 +178,7 @@ class AudioSegment(object):
         audio_params = (self.sample_width, self.frame_rate, self.channels)
 
         if isinstance(data, array.array):
-            try:
-                data = data.tobytes()
-            except:
-                data = data.tostring()
+            data = data.tobytes()
 
         # prevent partial specification of arguments
         if any(audio_params) and None in audio_params:
@@ -255,7 +241,7 @@ class AudioSegment(object):
             # implemented.
             i = iter(self._data)
             padding = {False: b"\x00", True: b"\xff"}
-            for b0, b1, b2 in izip(i, i, i):
+            for b0, b1, b2 in zip(i, i, i):
                 byte_buffer.write(padding[b2 > b"\x7f"[0]])
                 old_bytes = struct.pack(pack_fmt, b0, b1, b2)
                 byte_buffer.write(old_bytes)
@@ -294,7 +280,7 @@ class AudioSegment(object):
     def __eq__(self, other):
         try:
             return self._data == other._data
-        except:
+        except AttributeError:
             return False
 
     def __hash__(self):
@@ -421,10 +407,7 @@ class AudioSegment(object):
             data = b"".join(data)
 
         if isinstance(data, array.array):
-            try:
-                data = data.tobytes()
-            except:
-                data = data.tostring()
+            data = data.tobytes()
 
         # accept file-like objects
         if hasattr(data, "read"):
@@ -1330,7 +1313,7 @@ class AudioSegment(object):
             # it's a no-op, make a copy since we never mutate
             return self._spawn(self._data)
 
-        output = StringIO()
+        output = BytesIO()
 
         seg1, seg2 = AudioSegment._sync(self, seg)
         sample_width = seg1.sample_width
