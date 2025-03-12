@@ -10,6 +10,10 @@ except ImportError:  # Python 3.9+
 
 from ctypes import create_string_buffer
 
+# For Python 3 compatibility
+if not hasattr(bytes, "buffer"):
+    buffer = memoryview
+
 
 class error(Exception):
     pass
@@ -508,9 +512,7 @@ def ratecv(cp, size, nchannels, inrate, outrate, state, weightA=1, weightB=0):
                 prev_i[chan] = cur_i[chan]
                 cur_i[chan] = samples.next()
 
-                cur_i[chan] = (weightA * cur_i[chan] + weightB * prev_i[chan]) / (
-                    weightA + weightB
-                )
+                cur_i[chan] = (weightA * cur_i[chan] + weightB * prev_i[chan]) / (weightA + weightB)
 
             frame_count -= 1
             d += outrate

@@ -14,7 +14,10 @@ from warnings import warn
 try:
     import audioop
 except ImportError:
-    from . import pyaudioop as audioop
+    try:
+        from . import pyaudioop as audioop
+    except ImportError:
+        audioop = None
 
 if sys.version_info >= (3, 0):
     basestring = str
@@ -383,7 +386,7 @@ def cache_codecs(function):
     def wrapper():
         try:
             return cache[0]
-        except:
+        except Exception:
             cache[0] = function()
             return cache[0]
 
@@ -432,6 +435,8 @@ def stereo_to_ms(audio_segment):
     """
     Left-Right -> Mid-Side
     """
+    from .audio_segment import AudioSegment
+
     channel = audio_segment.split_to_mono()
     channel = [
         channel[0].overlay(channel[1]),
@@ -444,6 +449,8 @@ def ms_to_stereo(audio_segment):
     """
     Mid-Side -> Left-Right
     """
+    from .audio_segment import AudioSegment
+
     channel = audio_segment.split_to_mono()
     channel = [
         channel[0].overlay(channel[1]) - 3,

@@ -7,9 +7,7 @@ import itertools
 from .utils import db_to_float
 
 
-def detect_silence(
-    audio_segment, min_silence_len=1000, silence_thresh=-16, seek_step=1
-):
+def detect_silence(audio_segment, min_silence_len=1000, silence_thresh=-16, seek_step=1):
     """
     Returns a list of all silent sections [start, end] in milliseconds of audio_segment.
     Inverse of detect_nonsilent()
@@ -74,9 +72,7 @@ def detect_silence(
     return silent_ranges
 
 
-def detect_nonsilent(
-    audio_segment, min_silence_len=1000, silence_thresh=-16, seek_step=1
-):
+def detect_nonsilent(audio_segment, min_silence_len=1000, silence_thresh=-16, seek_step=1):
     """
     Returns a list of all nonsilent sections [start, end] in milliseconds of audio_segment.
     Inverse of detect_silent()
@@ -86,9 +82,7 @@ def detect_nonsilent(
     silence_thresh - the upper bound for how quiet is silent in dFBS
     seek_step - step size for interating over the segment in ms
     """
-    silent_ranges = detect_silence(
-        audio_segment, min_silence_len, silence_thresh, seek_step
-    )
+    silent_ranges = detect_silence(audio_segment, min_silence_len, silence_thresh, seek_step)
     len_seg = len(audio_segment)
 
     # if there is no silence, the whole thing is nonsilent
@@ -169,8 +163,7 @@ def split_on_silence(
             range_ii[0] = range_i[1]
 
     return [
-        audio_segment[max(start, 0) : min(end, len(audio_segment))]
-        for start, end in output_ranges
+        audio_segment[max(start, 0) : min(end, len(audio_segment))] for start, end in output_ranges
     ]
 
 
@@ -184,9 +177,7 @@ def detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10):
     """
     trim_ms = 0  # ms
     assert chunk_size > 0  # to avoid infinite loop
-    while sound[
-        trim_ms : trim_ms + chunk_size
-    ].dBFS < silence_threshold and trim_ms < len(sound):
+    while sound[trim_ms : trim_ms + chunk_size].dBFS < silence_threshold and trim_ms < len(sound):
         trim_ms += chunk_size
 
     # if there is no end it should return the length of the segment
