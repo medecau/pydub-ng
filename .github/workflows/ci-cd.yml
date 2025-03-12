@@ -9,33 +9,7 @@ on:
     types: [created]
 
 jobs:
-  # Setup job that installs ffmpeg once for all test jobs
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      ffmpeg-cache-key: ${{ steps.ffmpeg-cache.outputs.cache-key }}
-    steps:
-      - name: Setup ffmpeg cache key
-        id: ffmpeg-cache
-        run: echo "cache-key=ffmpeg-cache-$(date +%Y%m%d)" >> $GITHUB_OUTPUT
-
-      - name: Cache ffmpeg
-        id: cache-ffmpeg
-        uses: actions/cache@v4
-        with:
-          path: /tmp/ffmpeg-cache
-          key: ${{ steps.ffmpeg-cache.outputs.cache-key }}
-          
-      - name: Install ffmpeg
-        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
-          mkdir -p /tmp/ffmpeg-cache
-          echo "ffmpeg installed at $(date)" > /tmp/ffmpeg-cache/installed.txt
-
   test:
-    needs: setup
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -45,6 +19,24 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # Cache ffmpeg installation to avoid apt-get update on every run
+      - name: Cache ffmpeg
+        id: cache-ffmpeg
+        uses: actions/cache@v4
+        with:
+          path: /tmp/ffmpeg-cache
+          key: ${{ runner.os }}-ffmpeg-cache-${{ hashFiles('.github/workflows/ci-cd.yml') }}
+      
+      - name: Install ffmpeg
+        # Skip the apt-get update if we got a cache hit
+        run: |
+          if [ "${{ steps.cache-ffmpeg.outputs.cache-hit }}" != 'true' ]; then
+            sudo apt-get update
+            mkdir -p /tmp/ffmpeg-cache
+            echo "ffmpeg cache created at $(date)" > /tmp/ffmpeg-cache/installed.txt
+          fi
+          sudo apt-get install -y ffmpeg
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -59,21 +51,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-${{ matrix.python-version }}-
             ${{ runner.os }}-pip-
-      
-      - name: Setup ffmpeg from cache
-        id: ffmpeg-cache
-        uses: actions/cache/restore@v4
-        with:
-          path: /tmp/ffmpeg-cache
-          key: ${{ needs.setup.outputs.ffmpeg-cache-key }}
-      
-      - name: Install ffmpeg
-        # Skip the apt-get update if we got a cache hit
-        run: |
-          if [ "${{ steps.ffmpeg-cache.outputs.cache-hit }}" != "true" ]; then
-            sudo apt-get update
-          fi
-          sudo apt-get install -y ffmpeg
 
       - name: Cache uv
         uses: actions/cache@v4
