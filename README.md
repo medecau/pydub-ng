@@ -1,14 +1,14 @@
-# Pydub [![Build Status](https://travis-ci.org/jiaaro/pydub.svg?branch=master)](https://travis-ci.org/jiaaro/pydub) [![Build status](https://ci.appveyor.com/api/projects/status/gy1ucp9o5khq7fqi/branch/master?svg=true)](https://ci.appveyor.com/project/jiaaro/pydub/branch/master)
+# Pydub
 
 Pydub lets you do stuff to audio in a way that isn't stupid.
 
 **Stuff you might be looking for**:
- - [Installing Pydub](https://github.com/jiaaro/pydub#installation)
- - [API Documentation](https://github.com/jiaaro/pydub/blob/master/API.markdown)
- - [Dependencies](https://github.com/jiaaro/pydub#dependencies)
- - [Playback](https://github.com/jiaaro/pydub#playback)
- - [Setting up ffmpeg](https://github.com/jiaaro/pydub#getting-ffmpeg-set-up)
- - [Questions/Bugs](https://github.com/jiaaro/pydub#bugs--questions)
+ - [Installing Pydub](https://github.com/medecau/pydub-ng#installation)
+ - [API Documentation](https://github.com/medecau/pydub-ng/blob/main/API.markdown)
+ - [Dependencies](https://github.com/medecau/pydub-ng#dependencies)
+ - [Playback](https://github.com/medecau/pydub-ng#playback)
+ - [Setting up ffmpeg](https://github.com/medecau/pydub-ng#getting-ffmpeg-set-up)
+ - [Questions/Bugs](https://github.com/medecau/pydub-ng#bugs--questions)
  
 
 ##  Quickstart
@@ -155,7 +155,7 @@ automatically.
 
 ## Bugs & Questions
 
-You can file bugs in our [github issues tracker](https://github.com/jiaaro/pydub/issues), 
+You can file bugs in our [github issues tracker](https://github.com/medecau/pydub-ng/issues), 
 and ask any technical questions on 
 [Stack Overflow using the pydub tag](http://stackoverflow.com/questions/ask?tags=pydub). 
 We keep an eye on both.
@@ -166,18 +166,18 @@ Installing pydub is easy, but don't forget to install ffmpeg/avlib (the next sec
 
     pip install pydub
 
-Or install the latest dev version from github (or replace `@master` with a [release version like `@v0.12.0`](https://github.com/jiaaro/pydub/releases))…
+Or install the latest dev version from github (or replace `@main` with a [release version like `@v0.12.0`](https://github.com/medecau/pydub-ng/releases))…
 
-    pip install git+https://github.com/jiaaro/pydub.git@master
+    pip install git+https://github.com/medecau/pydub-ng.git@main
 
 -OR-
 
-    git clone https://github.com/jiaaro/pydub.git
+    git clone https://github.com/medecau/pydub-ng.git
 
 -OR-
 
 Copy the pydub directory into your python path. Zip 
-[here](https://github.com/jiaaro/pydub/zipball/master)
+[here](https://github.com/medecau/pydub-ng/zipball/main)
 
 ## Dependencies
 

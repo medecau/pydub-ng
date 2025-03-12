@@ -157,9 +157,13 @@ if sys.version_info >= (3, 6):
 
         def test_export_pathlib_path(self):
             seg1 = AudioSegment.from_file(self.mp3_path_str)
+            import uuid
             from pathlib import Path
 
-            path = Path(tempfile.gettempdir()) / "pydub-test-export-8ajds.mp3"
+            # Use a unique filename for each test run
+            filename = f"pydub-test-export-{uuid.uuid4()}.mp3"
+            path = Path(tempfile.gettempdir()) / filename
+
             try:
                 seg1.export(path, format="mp3")
                 seg2 = AudioSegment.from_file(path, format="mp3")
@@ -167,7 +171,8 @@ if sys.version_info >= (3, 6):
                 self.assertTrue(len(seg1) > 0)
                 self.assertWithinTolerance(len(seg1), len(seg2), percentage=0.01)
             finally:
-                os.unlink(path)
+                if path.exists():
+                    os.unlink(path)
 
 
 class FileAccessTests(unittest.TestCase):
