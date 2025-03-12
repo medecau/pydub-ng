@@ -11,17 +11,17 @@ authors = [
     {name = "James Robert", email = "jiaaro@gmail.com"},
 ]
 license = {text = "MIT"}
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 7 - Inactive",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Topic :: Multimedia :: Sound/Audio",
@@ -51,7 +51,7 @@ include = ["pydub*"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
+target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
@@ -84,7 +84,7 @@ directory = "htmlcov"
 
 [tool.tox]
 requires = ["tox>=4"]
-env_list = ["lint", "3.11", "3.12", "3.13"]
+env_list = ["lint", "3.10", "3.11", "3.12", "3.13"]
 
 [tool.tox.env_run_base]
 description = "run unit tests"
@@ -99,3 +99,6 @@ commands = [
     ["ruff", "check", "."],
     ["ruff", "format", "--check", "."]
 ]
+
+[tool.tox.env."3.10"]
+python = "3.10"

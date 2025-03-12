@@ -156,7 +156,7 @@ automatically.
 ## Continuous Integration & Deployment
 
 This project uses GitHub Actions for continuous integration and deployment. The pipeline:
-1. Runs tests on multiple Python versions (3.8-3.12)
+1. Runs tests on multiple Python versions (3.10-3.13)
 2. Generates HTML coverage reports
 3. Automatically publishes releases to PyPI when a new release is created
 
