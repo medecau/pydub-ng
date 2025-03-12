@@ -37,7 +37,6 @@ if sys.version_info >= (3, 0):
     xrange = range
 
 
-
 class ClassPropertyDescriptor(object):
     def __init__(self, fget, fset=None):
         self.fget = fget
@@ -189,9 +188,7 @@ class AudioSegment(object):
         # all arguments are given
         elif self.sample_width is not None:
             if len(data) % (self.sample_width * self.channels) != 0:
-                raise ValueError(
-                    "data length must be a multiple of '(sample_width * channels)'"
-                )
+                raise ValueError("data length must be a multiple of '(sample_width * channels)'")
 
             self.frame_width = self.channels * self.sample_width
             self._data = data
@@ -298,8 +295,7 @@ class AudioSegment(object):
         if isinstance(millisecond, slice):
             if millisecond.step:
                 return (
-                    self[i : i + millisecond.step]
-                    for i in xrange(*millisecond.indices(len(self)))
+                    self[i : i + millisecond.step] for i in xrange(*millisecond.indices(len(self)))
                 )
 
             start = millisecond.start if millisecond.start is not None else 0
@@ -367,13 +363,11 @@ class AudioSegment(object):
         """
         if rarg == 0:
             return self
-        raise TypeError("Gains must be the second addend after the " "AudioSegment")
+        raise TypeError("Gains must be the second addend after the AudioSegment")
 
     def __sub__(self, arg):
         if isinstance(arg, AudioSegment):
-            raise TypeError(
-                "AudioSegment objects can't be subtracted from " "each other"
-            )
+            raise TypeError("AudioSegment objects can't be subtracted from each other")
         else:
             return self.apply_gain(-arg)
 
@@ -431,20 +425,14 @@ class AudioSegment(object):
         sample_width = max(seg.sample_width for seg in segs)
 
         return tuple(
-            seg.set_channels(channels)
-            .set_frame_rate(frame_rate)
-            .set_sample_width(sample_width)
+            seg.set_channels(channels).set_frame_rate(frame_rate).set_sample_width(sample_width)
             for seg in segs
         )
 
     def _parse_position(self, val):
         if val < 0:
             val = len(self) - abs(val)
-        val = (
-            self.frame_count(ms=len(self))
-            if val == float("inf")
-            else self.frame_count(ms=val)
-        )
+        val = self.frame_count(ms=len(self)) if val == float("inf") else self.frame_count(ms=val)
         return int(val)
 
     @classmethod
@@ -494,9 +482,7 @@ class AudioSegment(object):
         frame_rate = segs[0].frame_rate
 
         frame_count = max(int(seg.frame_count()) for seg in segs)
-        data = array.array(
-            segs[0].array_type, b"\0" * (frame_count * sample_width * channels)
-        )
+        data = array.array(segs[0].array_type, b"\0" * (frame_count * sample_width * channels))
 
         for i, seg in enumerate(segs):
             data[i::channels] = seg.get_array_of_samples()
@@ -549,7 +535,7 @@ class AudioSegment(object):
                     return obj[: duration * 1000]
                 else:
                     return obj[start_second * 1000 : (start_second + duration) * 1000]
-            except:
+            except Exception:
                 file.seek(0)
         elif is_format("raw") or is_format("pcm"):
             sample_width = kwargs["sample_width"]
@@ -579,9 +565,7 @@ class AudioSegment(object):
         except OSError:
             input_file.flush()
             input_file.close()
-            input_file = NamedTemporaryFile(
-                mode="wb", delete=False, buffering=2**31 - 1
-            )
+            input_file = NamedTemporaryFile(mode="wb", delete=False, buffering=2**31 - 1)
             if close_file:
                 file.close()
             close_file = True
@@ -711,7 +695,7 @@ class AudioSegment(object):
                     return cls._from_safe_wav(file)[
                         start_second * 1000 : (start_second + duration) * 1000
                     ]
-            except:
+            except Exception:
                 file.seek(0)
         elif is_format("raw") or is_format("pcm"):
             sample_width = kwargs["sample_width"]
@@ -987,14 +971,10 @@ class AudioSegment(object):
 
         if cover is not None:
             if (
-                cover.lower().endswith(
-                    (".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff")
-                )
+                cover.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"))
                 and format == "mp3"
             ):
-                conversion_command.extend(
-                    ["-i", cover, "-map", "0", "-map", "1", "-c:v", "mjpeg"]
-                )
+                conversion_command.extend(["-i", cover, "-map", "0", "-map", "1", "-c:v", "mjpeg"])
             else:
                 raise AttributeError(
                     "Currently cover images are only supported by MP3 files. The allowed image formats are: .tif, .jpg, .bmp, .jpeg and .png."
@@ -1018,9 +998,7 @@ class AudioSegment(object):
                 # Extend converter command with tags
                 # print(tags)
                 for key, value in tags.items():
-                    conversion_command.extend(
-                        ["-metadata", "{0}={1}".format(key, value)]
-                    )
+                    conversion_command.extend(["-metadata", "{0}={1}".format(key, value)])
 
                 if format == "mp3":
                     # set id3v2 tag version
@@ -1264,20 +1242,14 @@ class AudioSegment(object):
         left_channel = audioop.tostereo(left_channel, self.sample_width, 1, 0)
         right_channel = audioop.tostereo(right_channel, self.sample_width, 0, 1)
 
-        return self._spawn(
-            data=audioop.add(left_channel, right_channel, self.sample_width)
-        )
+        return self._spawn(data=audioop.add(left_channel, right_channel, self.sample_width))
 
     def apply_gain(self, volume_change):
         return self._spawn(
-            data=audioop.mul(
-                self._data, self.sample_width, db_to_float(float(volume_change))
-            )
+            data=audioop.mul(self._data, self.sample_width, db_to_float(float(volume_change)))
         )
 
-    def overlay(
-        self, seg, position=0, loop=False, times=None, gain_during_overlay=None
-    ):
+    def overlay(self, seg, position=0, loop=False, times=None, gain_during_overlay=None):
         """
         Overlay the provided segment on to this segment starting at the
         specificed position and using the specfied looping beahvior.
@@ -1345,9 +1317,7 @@ class AudioSegment(object):
                 )
                 output.write(audioop.add(seg1_adjusted_gain, seg2, sample_width))
             else:
-                output.write(
-                    audioop.add(seg1[pos : pos + seg2_len], seg2, sample_width)
-                )
+                output.write(audioop.add(seg1[pos : pos + seg2_len], seg2, sample_width))
             pos += seg2_len
 
             # dec times to break our while loop (eventually)
@@ -1410,8 +1380,7 @@ class AudioSegment(object):
         """
         if None not in [duration, end, start]:
             raise TypeError(
-                'Only two of the three arguments, "start", '
-                '"end", and "duration" may be specified'
+                'Only two of the three arguments, "start", "end", and "duration" may be specified'
             )
 
         # no fade == the same audio
@@ -1477,9 +1446,7 @@ class AudioSegment(object):
         # original data after the crossfade portion, at the new volume
         after_fade = self[end:]._data
         if to_gain != 0:
-            after_fade = audioop.mul(
-                after_fade, self.sample_width, db_to_float(to_gain)
-            )
+            after_fade = audioop.mul(after_fade, self.sample_width, db_to_float(to_gain))
         output.append(after_fade)
 
         return self._spawn(data=output)

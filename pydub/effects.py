@@ -283,9 +283,7 @@ def high_pass_filter(seg, cutoff):
             offset = (i * seg.channels) + j
             offset_minus_1 = ((i - 1) * seg.channels) + j
 
-            last_val[j] = alpha * (
-                last_val[j] + original[offset] - original[offset_minus_1]
-            )
+            last_val[j] = alpha * (last_val[j] + original[offset] - original[offset_minus_1])
             filteredArray[offset] = int(min(max(last_val[j], minval), maxval))
 
     return seg._spawn(data=filteredArray)
@@ -303,9 +301,7 @@ def pan(seg, pan_amount):
     compensate. When panned hard left, the left channel will be 3dB louder.
     """
     if not -1.0 <= pan_amount <= 1.0:
-        raise ValueError(
-            "pan_amount should be between -1.0 (100% left) and +1.0 (100% right)"
-        )
+        raise ValueError("pan_amount should be between -1.0 (100% left) and +1.0 (100% right)")
 
     max_boost_db = ratio_to_db(2.0)
     boost_db = abs(pan_amount) * max_boost_db
@@ -349,6 +345,4 @@ def apply_gain_stereo(seg, left_gain=0.0, right_gain=0.0):
 
     output = audioop.add(left_data, right_data, seg.sample_width)
 
-    return seg._spawn(
-        data=output, overrides={"channels": 2, "frame_width": 2 * seg.sample_width}
-    )
+    return seg._spawn(data=output, overrides={"channels": 2, "frame_width": 2 * seg.sample_width})

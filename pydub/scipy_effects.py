@@ -12,6 +12,7 @@ provided by pydub.effects.
 
 from scipy.signal import butter, sosfilt
 
+from .audio_segment import AudioSegment
 from .utils import ms_to_stereo, register_pydub_effect, stereo_to_ms
 
 
@@ -51,9 +52,7 @@ def _mk_butter_filter(freq, type, order):
 
 @register_pydub_effect
 def band_pass_filter(seg, low_cutoff_freq, high_cutoff_freq, order=5):
-    filter_fn = _mk_butter_filter(
-        [low_cutoff_freq, high_cutoff_freq], "band", order=order
-    )
+    filter_fn = _mk_butter_filter([low_cutoff_freq, high_cutoff_freq], "band", order=order)
     return seg.apply_mono_filter_to_each_channel(filter_fn)
 
 
@@ -163,12 +162,12 @@ def eq(
     if channel_mode == "L":
         seg = seg.split_to_mono()
         seg = [_eq(seg[0], focus_freq, bandwidth, filter_mode, gain_dB, order), seg[1]]
-        return AudioSegment.from_mono_audio_segements(seg[0], seg[1])
+        return AudioSegment.from_mono_audiosegments(seg[0], seg[1])
 
     if channel_mode == "R":
         seg = seg.split_to_mono()
         seg = [seg[0], _eq(seg[1], focus_freq, bandwidth, filter_mode, gain_dB, order)]
-        return AudioSegment.from_mono_audio_segements(seg[0], seg[1])
+        return AudioSegment.from_mono_audiosegments(seg[0], seg[1])
 
     if channel_mode == "M+S":
         seg = stereo_to_ms(seg)
@@ -178,11 +177,11 @@ def eq(
     if channel_mode == "M":
         seg = stereo_to_ms(seg).split_to_mono()
         seg = [_eq(seg[0], focus_freq, bandwidth, filter_mode, gain_dB, order), seg[1]]
-        seg = AudioSegment.from_mono_audio_segements(seg[0], seg[1])
+        seg = AudioSegment.from_mono_audiosegments(seg[0], seg[1])
         return ms_to_stereo(seg)
 
     if channel_mode == "S":
         seg = stereo_to_ms(seg).split_to_mono()
         seg = [seg[0], _eq(seg[1], focus_freq, bandwidth, filter_mode, gain_dB, order)]
-        seg = AudioSegment.from_mono_audio_segements(seg[0], seg[1])
+        seg = AudioSegment.from_mono_audiosegments(seg[0], seg[1])
         return ms_to_stereo(seg)
