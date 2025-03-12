@@ -153,6 +153,15 @@ subprocess.call(['ffmpeg', '-y', '-i', '/var/folders/71/42k8g72x4pq09tfp920d033r
 Don't worry about the temporary files used in the conversion. They're cleaned up 
 automatically.
 
+## Continuous Integration & Deployment
+
+This project uses GitHub Actions for continuous integration and deployment. The pipeline:
+1. Runs tests on multiple Python versions (3.8-3.12)
+2. Generates HTML coverage reports
+3. Automatically publishes releases to PyPI when a new release is created
+
+[![CI/CD](https://github.com/medecau/pydub-ng/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/medecau/pydub-ng/actions/workflows/ci-cd.yml)
+
 ## Bugs & Questions
 
 You can file bugs in our [github issues tracker](https://github.com/medecau/pydub-ng/issues), 

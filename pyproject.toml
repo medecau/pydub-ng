@@ -38,7 +38,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0.0", "pytest-cov>=4.1.0", "pytest-datadir>=1.4.1"]
+dev = ["pytest>=8.0.0", "pytest-cov>=4.1.0", "pytest-datadir>=1.4.1", "build>=1.0.0"]
 
 [project.urls]
 Homepage = "https://github.com/medecau/pydub-ng"
