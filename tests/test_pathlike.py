@@ -1,6 +1,5 @@
 """Tests for path-like object handling in pydub."""
 
-import os
 import sys
 from pathlib import Path
 
@@ -131,5 +130,5 @@ def test_export_pathlib_path(data_dir, tmp_path):
     assert len(seg1) > 0
     # Check that lengths are within 1%
     assert abs(len(seg1) - len(seg2)) < len(seg1) * 0.01
-    
+
     # tmp_path fixture automatically cleans up after the test

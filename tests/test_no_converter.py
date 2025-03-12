@@ -1,14 +1,9 @@
 """Tests for pydub functionality without an external converter."""
 
-import os
-import sys
-from functools import partial
-
 import pytest
 
 from pydub import AudioSegment
-from pydub.exceptions import CouldntDecodeError, MissingAudioParameter
-from pydub.utils import get_encoder_name
+from pydub.exceptions import MissingAudioParameter
 
 
 @pytest.fixture(scope="module")
@@ -69,15 +64,11 @@ def test_opening_wav24_file(test_files, no_converter):
 def test_opening_raw_file(test_files, no_converter):
     """Test opening a RAW file works without a converter."""
     raw_file = test_files["raw_file"]
-    
-    seg = AudioSegment.from_raw(
-        str(raw_file), sample_width=2, frame_rate=32000, channels=2
-    )
+
+    seg = AudioSegment.from_raw(str(raw_file), sample_width=2, frame_rate=32000, channels=2)
     assert len(seg) > 1000
 
-    seg = AudioSegment.from_file(
-        str(raw_file), "raw", sample_width=2, frame_rate=32000, channels=2
-    )
+    seg = AudioSegment.from_file(str(raw_file), "raw", sample_width=2, frame_rate=32000, channels=2)
     assert len(seg) > 1000
 
     seg = AudioSegment.from_file(
@@ -89,7 +80,7 @@ def test_opening_raw_file(test_files, no_converter):
 def test_opening_raw_file_with_missing_args_fails(test_files, no_converter):
     """Test opening a RAW file fails without required args."""
     raw_file = test_files["raw_file"]
-    
+
     with pytest.raises(KeyError):
         AudioSegment.from_raw(str(raw_file))
 
@@ -97,7 +88,7 @@ def test_opening_raw_file_with_missing_args_fails(test_files, no_converter):
 def test_opening_mp3_file_fails(test_files, no_converter):
     """Test opening an MP3 file fails without a converter."""
     mp3_file = test_files["mp3_file"]
-    
+
     with pytest.raises(OSError):
         AudioSegment.from_mp3(str(mp3_file))
 
@@ -141,7 +132,7 @@ def test_init_audiosegment_data_buffer_with_bad_values_fails(no_converter):
 def test_exporting(test_files, no_converter):
     """Test exporting works without a converter."""
     wave_file = test_files["wave_file"]
-    
+
     seg = AudioSegment.from_wav(str(wave_file))
     exported = AudioSegment.from_wav(seg.export(format="wav"))
 
@@ -151,7 +142,7 @@ def test_exporting(test_files, no_converter):
 def test_opening_empty_wav_file(test_files, no_converter):
     """Test opening an empty WAV file works without a converter."""
     wave_empty = test_files["wave_empty"]
-    
+
     seg = AudioSegment.from_wav(str(wave_empty))
     assert len(seg) == 0
 
