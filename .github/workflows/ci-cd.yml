@@ -9,12 +9,38 @@ on:
     types: [created]
 
 jobs:
+  # Setup job that installs ffmpeg once for all test jobs
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      ffmpeg-cache-key: ${{ steps.ffmpeg-cache.outputs.cache-key }}
+    steps:
+      - name: Setup ffmpeg cache key
+        id: ffmpeg-cache
+        run: echo "cache-key=ffmpeg-cache-$(date +%Y%m%d)" >> $GITHUB_OUTPUT
+
+      - name: Cache ffmpeg
+        id: cache-ffmpeg
+        uses: actions/cache@v4
+        with:
+          path: /tmp/ffmpeg-cache
+          key: ${{ steps.ffmpeg-cache.outputs.cache-key }}
+          
+      - name: Install ffmpeg
+        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          mkdir -p /tmp/ffmpeg-cache
+          echo "ffmpeg installed at $(date)" > /tmp/ffmpeg-cache/installed.txt
+
   test:
-    runs-on: ${{ matrix.os }}
+    needs: setup
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
         python-version: ['3.10', '3.11', '3.12', '3.13']
+      fail-fast: false
 
     steps:
       - name: Checkout repository
@@ -24,15 +50,31 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: 'pyproject.toml'
+      
+      - name: Setup ffmpeg from cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/ffmpeg-cache
+          key: ${{ needs.setup.outputs.ffmpeg-cache-key }}
+      
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-${{ matrix.python-version }}-
 
       - name: Install uv
         run: pip install uv
 
       - name: Install dependencies
         run: uv sync --extra dev
-        
-      - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Run tests with coverage
         run: uv run pytest --cov=pydub --cov-report=xml
@@ -56,6 +98,16 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: 'pyproject.toml'
+
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-3.10-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-3.10-
 
       - name: Install uv
         run: pip install uv
