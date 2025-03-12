@@ -67,8 +67,8 @@ env_list = ["lint", "3.11", "3.12", "3.13"]
 
 [tool.tox.env_run_base]
 description = "run unit tests"
-deps = ["pytest>=8", "pytest-datadir>=1.4.1"]
-commands = [["pytest", "tests/", "-v"]]
+deps = ["pytest>=8", "pytest-datadir>=1.4.1", "pytest-cov>=4.1.0"]
+commands = [["pytest", "tests/", "-v", "--cov=pydub", "--cov-report=term", "--cov-report=xml"]]
 
 [tool.tox.env.lint]
 description = "run linters and code formatters"
