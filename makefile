@@ -1,4 +1,4 @@
-.PHONY: all fmt test
+.PHONY: all fmt test coverage
 
 all: fmt test
 
@@ -8,3 +8,6 @@ fmt:
 
 test:
 	tox -p
+	
+coverage:
+	uv run pytest tests/ -v --cov=pydub --cov-report=term --cov-report=html
