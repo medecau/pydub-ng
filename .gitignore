@@ -1,8 +1,9 @@
+.*
 *.pyc
 /.project
 /.pydevproject
 /dist/
-/pydub.egg-info/
+/pydub_ng.egg-info/
 .DS_Store
 env
 *.swp

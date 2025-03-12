@@ -6,7 +6,7 @@ Don't be shy!
 
 ### How to contribute:
 
-1. Fork [pydub on github](https://github.com/jiaaro/pydub)
+1. Fork [pydub on github](https://github.com/medecau/pydub-ng)
 2. Commit changes
 3. Send a Pull Request
 
@@ -41,5 +41,5 @@ Here are some general topics of interest for future development:
 - Improve handling of large audio files
 - Make things faster and use less memory.
 
-[bugs]: https://github.com/jiaaro/pydub/issues?q=is%3Aissue+is%3Aopen+label%3Abug
-[todos]: https://github.com/jiaaro/pydub/issues?q=is%3Aissue+is%3Aopen+label%3Atodo
+[bugs]: https://github.com/medecau/pydub-ng/issues?q=is%3Aissue+is%3Aopen+label%3Abug
+[todos]: https://github.com/medecau/pydub-ng/issues?q=is%3Aissue+is%3Aopen+label%3Atodo
