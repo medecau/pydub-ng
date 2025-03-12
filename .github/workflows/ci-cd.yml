@@ -30,10 +30,17 @@ jobs:
       
       # Upload APT archives as an artifact to share with test jobs
       - name: Upload APT archives
+        run: |
+          # Copy APT archives to a location we have permission to access
+          sudo mkdir -p /tmp/apt-archives
+          sudo cp -r /var/cache/apt/archives/*.deb /tmp/apt-archives/ || true
+          sudo chmod -R 777 /tmp/apt-archives
+        
+      - name: Upload APT archives artifact
         uses: actions/upload-artifact@v4
         with:
           name: apt-archives
-          path: /var/cache/apt/archives
+          path: /tmp/apt-archives
           retention-days: 1
 
   test:
@@ -53,11 +60,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: apt-archives
-          path: /var/cache/apt/archives
+          path: /tmp/apt-archives
       
       - name: Install ffmpeg using cached packages
         run: |
-          # No need for apt-get update since we're using the cached packages
+          # Copy the downloaded deb files to apt's cache directory
+          sudo mkdir -p /var/cache/apt/archives
+          sudo cp -f /tmp/apt-archives/*.deb /var/cache/apt/archives/ || true
+          
+          # Install ffmpeg from the cached packages
           sudo apt-get install -y ffmpeg
 
       - name: Set up Python ${{ matrix.python-version }}
