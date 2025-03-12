@@ -9,7 +9,35 @@ on:
     types: [created]
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Cache APT archives to avoid downloads in each test job
+      - name: Cache APT archives
+        id: apt-cache
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/ci-cd.yml') }}
+      
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      
+      # Upload APT archives as an artifact to share with test jobs
+      - name: Upload APT archives
+        uses: actions/upload-artifact@v4
+        with:
+          name: apt-archives
+          path: /var/cache/apt/archives
+          retention-days: 1
+
   test:
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -20,22 +48,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Cache ffmpeg installation to avoid apt-get update on every run
-      - name: Cache ffmpeg
-        id: cache-ffmpeg
-        uses: actions/cache@v4
+      # Download the APT archives artifact from the setup job
+      - name: Download APT archives
+        uses: actions/download-artifact@v4
         with:
-          path: /tmp/ffmpeg-cache
-          key: ${{ runner.os }}-ffmpeg-cache-${{ hashFiles('.github/workflows/ci-cd.yml') }}
+          name: apt-archives
+          path: /var/cache/apt/archives
       
-      - name: Install ffmpeg
-        # Skip the apt-get update if we got a cache hit
+      - name: Install ffmpeg using cached packages
         run: |
-          if [ "${{ steps.cache-ffmpeg.outputs.cache-hit }}" != 'true' ]; then
-            sudo apt-get update
-            mkdir -p /tmp/ffmpeg-cache
-            echo "ffmpeg cache created at $(date)" > /tmp/ffmpeg-cache/installed.txt
-          fi
+          # No need for apt-get update since we're using the cached packages
           sudo apt-get install -y ffmpeg
 
       - name: Set up Python ${{ matrix.python-version }}
