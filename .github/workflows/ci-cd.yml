@@ -50,17 +50,30 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-          cache-dependency-path: 'pyproject.toml'
+          
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+            ${{ runner.os }}-pip-
       
       - name: Setup ffmpeg from cache
+        id: ffmpeg-cache
         uses: actions/cache/restore@v4
         with:
           path: /tmp/ffmpeg-cache
           key: ${{ needs.setup.outputs.ffmpeg-cache-key }}
       
       - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+        # Skip the apt-get update if we got a cache hit
+        run: |
+          if [ "${{ steps.ffmpeg-cache.outputs.cache-hit }}" != "true" ]; then
+            sudo apt-get update
+          fi
+          sudo apt-get install -y ffmpeg
 
       - name: Cache uv
         uses: actions/cache@v4
@@ -98,8 +111,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          cache: 'pip'
-          cache-dependency-path: 'pyproject.toml'
+          
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-3.10-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-3.10-
+            ${{ runner.os }}-pip-
 
       - name: Cache uv
         uses: actions/cache@v4
