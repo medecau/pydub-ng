@@ -1,6 +1,5 @@
 # Ignore all dotfiles except the ones explicitly allowed
 .*
-!.coveragerc
 !.github
 *.pyc
 /.project
