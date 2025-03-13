@@ -1,4 +1,6 @@
-# Pydub
+# Pydub-NG
+
+> **Note:** This is a fork of the original [Pydub](https://github.com/jiaaro/pydub) project, focused on supporting modern Python versions and maintaining active development.
 
 Pydub lets you do stuff to audio in a way that isn't stupid.
 
@@ -171,9 +173,9 @@ We keep an eye on both.
 
 ## Installation
 
-Installing pydub is easy, but don't forget to install ffmpeg/avlib (the next section in this doc)
+Installing pydub-ng is easy, but don't forget to install ffmpeg/avlib (the next section in this doc)
 
-    pip install pydub
+    pip install pydub-ng
 
 Or install the latest dev version from github (or replace `@main` with a [release version like `@v0.12.0`](https://github.com/medecau/pydub-ng/releases))…
 
