@@ -1,8 +1,11 @@
+# Ignore all dotfiles except the ones explicitly allowed
+.*
+!.github
 *.pyc
 /.project
 /.pydevproject
 /dist/
-/pydub.egg-info/
+/pydub_ng.egg-info/
 .DS_Store
 env
 *.swp
@@ -10,3 +13,9 @@ env
 
 /build/
 .remote-sync.json
+
+# Coverage reports
+.coverage
+htmlcov/
+coverage.xml
+.pytest_cache/

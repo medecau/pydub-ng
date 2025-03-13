@@ -1,0 +1,104 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pydub-ng"
+version = "0.1.0"
+description = "Manipulate audio with an simple and easy high level interface"
+readme = "README.md"
+authors = [
+    {name = "James Robert", email = "jiaaro@gmail.com"},
+]
+license = {text = "MIT"}
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 7 - Inactive",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+    "Topic :: Multimedia :: Sound/Audio :: Conversion",
+    "Topic :: Multimedia :: Sound/Audio :: Editors",
+    "Topic :: Multimedia :: Sound/Audio :: Mixers",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Utilities",
+]
+keywords = ["audio", "sound", "high-level"]
+dependencies = [
+    "audioop-lts>=0.2.1; python_version >= '3.13'"
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "pytest-cov>=4.1.0", "pytest-datadir>=1.4.1", "build>=1.0.0"]
+
+[project.urls]
+Homepage = "https://github.com/medecau/pydub-ng"
+Repository = "https://github.com/medecau/pydub-ng"
+
+[tool.setuptools.packages.find]
+include = ["pydub*"]
+
+# Version is defined here as the single source of truth
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]  # Ignore line too long errors in existing code
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.coverage.run]
+source = ["pydub"]
+omit = [
+    "*/site-packages/*",
+    "*/dist-packages/*",
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.tox]
+requires = ["tox>=4"]
+env_list = ["lint", "3.10", "3.11", "3.12", "3.13"]
+
+[tool.tox.env_run_base]
+description = "run unit tests"
+deps = ["pytest>=8", "pytest-datadir>=1.4.1", "pytest-cov>=4.1.0"]
+commands = [["pytest", "tests/", "-v", "--cov=pydub", "--cov-report=term", "--cov-report=xml"]]
+
+[tool.tox.env.lint]
+description = "run linters and code formatters"
+skip_install = true
+deps = ["ruff"]
+commands = [
+    ["ruff", "check", "."],
+    ["ruff", "format", "--check", "."]
+]
+
+[tool.tox.env."3.10"]
+python = "3.10"
