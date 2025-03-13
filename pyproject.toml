@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "pydub-ng"
 version = "0.1.0"
 description = "Manipulate audio with an simple and easy high level interface"
-readme = {file = "README.markdown", content-type = "text/markdown"}
+readme = "README.md"
 authors = [
     {name = "James Robert", email = "jiaaro@gmail.com"},
 ]
