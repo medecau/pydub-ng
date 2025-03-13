@@ -532,57 +532,86 @@ def _sign(num):
 def lin2ulaw(cp, size):
     maxval = _get_maxval(size)
     result = create_string_buffer(len(cp))
-    
+
     for i in range(_sample_count(cp, size)):
         sample = _get_sample(cp, size, i)
-        val = _sign(sample/maxval)*math.log(1+255*math.abs(sample/maxval))/math.log(1+255)
-        _put_sample(result, size, i, val)
-        
-    return result
+        val = _sign(sample / maxval) * math.log(1 + 255 * abs(sample / maxval)) / math.log(1 + 255)
+        # Convert to integer for _put_sample - it expects an integer
+        val_int = int(round(val * maxval))
+        _put_sample(result, size, i, val_int)
+
+    return result.raw
 
 
 def ulaw2lin(cp, size):
     maxval = _get_maxval(size)
+    minval = _get_minval(size)
     result = create_string_buffer(len(cp))
-    
+
     for i in range(_sample_count(cp, size)):
         sample = _get_sample(cp, size, i)
-        val = (_sign(sample)*((1+255)**math.abs(sample)-1)/255) * maxval
-        _put_sample(result, size, i, val)
-        
-    return result
+        # Scale sample from -1 to 1 if it's not already
+        if abs(sample) > 1:
+            sample = sample / maxval
+        val = (_sign(sample) * ((1 + 255) ** abs(sample) - 1) / 255) * maxval
+        # Convert to integer for _put_sample - it expects an integer
+        val_int = int(round(val))
+        # Ensure value is within the valid range for the sample size
+        val_int = builtin_max(builtin_min(val_int, maxval), minval)
+        _put_sample(result, size, i, val_int)
+
+    return result.raw
 
 
 def lin2alaw(cp, size):
     maxval = _get_maxval(size)
     result = create_string_buffer(len(cp))
-    
+
     for i in range(_sample_count(cp, size)):
         sample = _get_sample(cp, size, i)
         val = None
-        if math.abs(sample/maxval) < 1/87.6:
-            val = _sign(sample/maxval)*87.6*math.abs(sample/maxval)/(1+math.log(87.6))
+        if abs(sample / maxval) < 1 / 87.6:
+            val = _sign(sample / maxval) * 87.6 * abs(sample / maxval) / (1 + math.log(87.6))
         else:
-            val = _sign(sample/maxval)*(1+math.log(87.6*math.abs(sample/maxval)))/(1+math.log(87.6)) 
-        _put_sample(result, size, i, val)
-        
-    return result
+            val = (
+                _sign(sample / maxval)
+                * (1 + math.log(87.6 * abs(sample / maxval)))
+                / (1 + math.log(87.6))
+            )
+        # Convert to integer for _put_sample - it expects an integer
+        val_int = int(round(val * maxval))
+        _put_sample(result, size, i, val_int)
+
+    return result.raw
 
 
 def alaw2lin(cp, size):
     maxval = _get_maxval(size)
+    minval = _get_minval(size)
     result = create_string_buffer(len(cp))
-    
+
     for i in range(_sample_count(cp, size)):
         sample = _get_sample(cp, size, i)
+        # Scale sample from -1 to 1 if it's not already
+        if abs(sample) > 1:
+            sample = sample / maxval
         val = None
-        if math.abs(sample) < 1/(1+math.log(87.6)):
-            val = _sign(sample) * math.abs(sample)*(1+math.log(87.6))/87.6 * maxval
+        if abs(sample) < 1 / (1 + math.log(87.6)):
+            val = _sign(sample) * abs(sample) * (1 + math.log(87.6)) / 87.6 * maxval
         else:
-            val = _sign(sample) * (math.e**(-1+math.abs(sample)*(1+math.log(87.6)))) / 87.6 * maxval
-        _put_sample(result, size, i, val)
-        
-    return result
+            val = (
+                _sign(sample)
+                * (math.e ** (-1 + abs(sample) * (1 + math.log(87.6))))
+                / 87.6
+                * maxval
+            )
+        # Convert to integer for _put_sample - it expects an integer
+        val_int = int(round(val))
+        # Ensure value is within the valid range for the sample size
+        val_int = builtin_max(builtin_min(val_int, maxval), minval)
+        _put_sample(result, size, i, val_int)
+
+    return result.raw
 
 
 def lin2adpcm(cp, size, state):
