@@ -1,21 +1,14 @@
 # Ignore all dotfiles except the ones explicitly allowed
 .*
-!.github
+*.lock
 *.pyc
-/.project
-/.pydevproject
+!.github
 /dist/
 /pydub_ng.egg-info/
-.DS_Store
 env
 *.swp
-.idea
-
 /build/
-.remote-sync.json
 
 # Coverage reports
-.coverage
 htmlcov/
 coverage.xml
-.pytest_cache/
