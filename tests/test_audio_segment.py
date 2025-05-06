@@ -611,6 +611,21 @@ def test_export_forced_codec(test_segments, temp_ogg_file):
     assert_within_tolerance(len(exported), len(seg1) + len(seg2), percentage=0.01)
 
 
+def test_export_progress_callback_codec(test_segments, temp_ogg_file):
+    """Test exporting with forced codec."""
+    seg1 = test_segments["seg1"]
+    
+    progress_called = False
+    
+    def progress_update(a, b):
+        nonlocal progress_called
+        progress_called = True
+
+    (seg1).export(temp_ogg_file, "ogg", codec="libvorbis", progress_callback=progress_update)
+
+    assert(progress_called)
+
+
 def test_fades(test_segments):
     """Test fading in and out."""
     seg1 = test_segments["seg1"]

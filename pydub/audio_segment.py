@@ -875,6 +875,8 @@ class AudioSegment(object):
         tags=None,
         id3v2_version="4",
         cover=None,
+        progress_callback=None,
+        progress_interval=1000,
     ):
         """
         Export an AudioSegment to a file with given options
@@ -1012,6 +1014,15 @@ class AudioSegment(object):
         if sys.platform == "darwin" and codec == "mp3":
             conversion_command.extend(["-write_xing", "0"])
 
+        if progress_callback is not None:
+            conversion_command.extend(
+                [
+                    "-progress",
+                    "pipe:1",
+                ]
+            )
+            conversion_command.extend(["-stats_period", f"{progress_interval}ms"])
+
         conversion_command.extend(
             [
                 "-f",
@@ -1030,10 +1041,22 @@ class AudioSegment(object):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-        p_out, p_err = p.communicate()
+        if progress_callback:
+            progress_max_value = len(self)*1000
+            with p.stdout as stdout, p.stderr as stderr:
+                for line in iter(stdout.readline, b''):
+                    line = line.decode(errors="ignore").strip()
+                    if line.startswith('out_time_ms='):
+                        progress_callback(int(line[12:]), progress_max_value)
+                p_out = stdout.read()
+                p_err = stderr.read()
+            p.wait()
+        else:
+            p_out, p_err = p.communicate()
 
         log_subprocess_output(p_out)
         log_subprocess_output(p_err)
+        
 
         try:
             if p.returncode != 0:
