@@ -1168,7 +1168,7 @@ class AudioSegment(object):
         rms = self.rms
         if not rms:
             return -float("infinity")
-        return ratio_to_db(self.rms / self.max_possible_amplitude)
+        return ratio_to_db(rms / self.max_possible_amplitude)
 
     @property
     def max(self):
