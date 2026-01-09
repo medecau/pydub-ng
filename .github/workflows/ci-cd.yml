@@ -9,6 +9,22 @@ on:
     types: [created]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run ruff check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "check"
+
+      - name: Run ruff format check
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check"
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -46,25 +62,26 @@ jobs:
           python-version: ${{ matrix.python-version }}
         continue-on-error: ${{ env.ACT }}
 
-      # Simple step to install dependencies with any available Python
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      # Install dependencies using uv
       - name: Install dependencies
         run: |
-          # Use any available Python
-          which python3 || which python || echo "Python not found"
-          python3 -m pip install --upgrade pip || python -m pip install --upgrade pip || echo "Using system pip"
-          pip install pytest pytest-cov || echo "Using system pytest"
-          pip install -e . || echo "Failed to install package"
+          uv sync --extra dev
 
-      # Run tests with any available Python
+      # Run tests using uv
       - name: Run tests
         run: |
-          python -m pytest || python3 -m pytest || echo "Tests failed but continuing for local testing"
+          uv run pytest tests/
 
       # Generate coverage with Python 3.12 only in GitHub Actions
       - name: Generate Coverage Report
         if: matrix.python-version == '3.12' && !env.ACT
         run: |
-          python -m pytest --cov=pydub --cov-report=term --cov-report=html || echo "Coverage generation failed"
+          uv run pytest --cov=pydub --cov-report=term --cov-report=html
 
   deploy:
     needs: test
@@ -92,14 +109,11 @@ jobs:
           python-version: "3.10"
         continue-on-error: ${{ env.ACT }}
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip || python3 -m pip install --upgrade pip
-          pip install build
-          pip install -e .
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Build package
-        run: python -m build || python3 -m build
+        run: uv build
 
       - name: Publish to PyPI
         if: github.event_name == 'release' && !env.ACT
