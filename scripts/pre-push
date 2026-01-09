@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+echo "Running pre-commit checks..."
+"$(dirname "$0")/pre-commit"
+
+echo "Running tests with coverage..."
+uv run pytest tests/ --cov=pydub --cov-report=xml --cov-report=term
+
+echo "Checking diff coverage..."
+if ! uv run diff-cover coverage.xml; then
+    echo ""
+    echo "ERROR: Test coverage check failed on modified lines."
+    echo "Ensure your changes have adequate test coverage before pushing."
+    exit 1
+fi
+
+echo "Pre-push checks passed!"

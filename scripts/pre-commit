@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+
+echo "Running ruff check --fix-only..."
+uv run ruff check --fix-only . || true  # Don't fail, just get free auto-fixes
+
+echo "Running ruff format..."
+uv run ruff format .
+
+echo "Checking diff quality..."
+if ! uv run diff-quality --violations=ruff.check; then
+    echo ""
+    echo "ERROR: Code quality check failed on modified lines."
+    echo "Fix the issues shown above before committing."
+    exit 1
+fi
+
+echo "Checking for unstaged changes..."
+if ! git diff --name-status --exit-code; then
+    echo ""
+    echo "ERROR: Unstaged changes detected after formatting."
+    echo ""
+    echo "Options to fix this:"
+    echo "  1. Add the changes to your commit:"
+    echo "     git add -u"
+    echo ""
+    echo "  2. Stash changes if you don't want to include them:"
+    echo "     git stash -k"
+    echo ""
+    exit 1
+fi
+
+echo "Pre-commit checks passed!"

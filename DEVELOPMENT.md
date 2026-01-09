@@ -9,8 +9,39 @@ This guide provides information for developers working on the pydub-ng project.
 git clone https://github.com/medecau/pydub-ng.git
 cd pydub-ng
 
-# Install development dependencies
+# Run the development setup script (recommended)
+bash scripts/init-dev.sh
+
+# OR install manually
 pip install -e ".[dev]"
+```
+
+The `init-dev.sh` script will:
+- Sync the environment using `uv`
+- Install git hooks for automatic code quality checks
+
+### Git Hooks
+
+The project includes two git hooks that help maintain code quality:
+
+**pre-commit**: Runs on every commit
+- Automatically fixes code issues with `ruff check --fix-only`
+- Formats code with `ruff format`
+- Verifies code quality on modified lines using `diff-quality`
+- Fails if there are unstaged changes after formatting (prompts you to stage them)
+
+**pre-push**: Runs before pushing to remote
+- Runs all pre-commit checks first
+- Runs full test suite with coverage (`pytest --cov=pydub --cov-report=xml`)
+- Verifies test coverage on modified lines using `diff-cover`
+- Prevents pushing code without adequate test coverage
+
+These hooks are automatically linked by `scripts/init-dev.sh`. To install them manually:
+
+```bash
+chmod +x scripts/pre-commit scripts/pre-push
+ln -sf "$(pwd)/scripts/pre-commit" .git/hooks/pre-commit
+ln -sf "$(pwd)/scripts/pre-push" .git/hooks/pre-push
 ```
 
 ## Running Tests
