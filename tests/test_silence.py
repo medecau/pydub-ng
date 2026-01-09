@@ -23,14 +23,16 @@ def test_split_on_silence_complete_silence():
 def test_split_on_silence_test1(silence_test_files):
     """Test splitting on silence in a test file."""
     test1, _ = silence_test_files
-    splits = split_on_silence(test1, min_silence_len=500, silence_thresh=-20)
+    splits = split_on_silence(test1, min_silence_len=500, silence_thresh=-20, seek_step=10)
     assert len(splits) == 3
 
 
 def test_split_on_silence_no_silence(silence_test_files):
     """Test splitting with threshold that finds no silence."""
     test1, _ = silence_test_files
-    splits = split_on_silence(test1, min_silence_len=5000, silence_thresh=-200, keep_silence=True)
+    splits = split_on_silence(
+        test1, min_silence_len=5000, silence_thresh=-200, keep_silence=True, seek_step=100
+    )
     lens = [len(split) for split in splits]
     assert lens == [len(test1)]
 
@@ -59,8 +61,8 @@ def test_detect_too_long_silence():
 def test_detect_silence_seg1(silence_test_files):
     """Test detecting silence in test1.wav."""
     test1, _ = silence_test_files
-    silent_ranges = detect_silence(test1, min_silence_len=500, silence_thresh=-20)
-    assert silent_ranges == [[0, 775], [3141, 4033], [5516, 6051]]
+    silent_ranges = detect_silence(test1, min_silence_len=500, silence_thresh=-20, seek_step=10)
+    assert silent_ranges == [[0, 770], [3150, 4030], [5520, 6050]]
 
 
 def test_detect_silence_seg1_with_seek_split(silence_test_files):
@@ -73,7 +75,9 @@ def test_detect_silence_seg1_with_seek_split(silence_test_files):
 def test_realistic_audio(silence_test_files):
     """Test silence detection on realistic audio sample."""
     _, test4 = silence_test_files
-    silent_ranges = detect_silence(test4, min_silence_len=1000, silence_thresh=test4.dBFS)
+    silent_ranges = detect_silence(
+        test4, min_silence_len=1000, silence_thresh=test4.dBFS, seek_step=10
+    )
 
     # Check that ranges are in order
     prev_end = -1

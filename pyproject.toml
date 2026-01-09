@@ -19,6 +19,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Topic :: Multimedia :: Sound/Audio",
@@ -64,10 +66,12 @@ exclude_lines = [
 ]
 
 [tool.tox]
-requires = ["tox>=4"]
-env_list = ["lint", "py310", "py311", "py312"]
+requires = ["tox>=4", "tox-uv>=1.25"]
+env_list = ["lint", "py310", "py311", "py312", "py313", "py314"]
+uv_python_preference = "only-managed"
 
 [tool.tox.env_run_base]
+runner = "uv-venv-runner"
 extras = ["dev"]
 commands = [
     ["pytest", "tests/", "-v", "--cov=pydub", "--cov-report=term"]
@@ -75,6 +79,7 @@ commands = [
 
 [tool.tox.env.lint]
 description = "run linters and code formatters"
+runner = "uv-venv-runner"
 skip_install = true
 deps = ["ruff"]
 commands = [
