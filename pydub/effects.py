@@ -75,10 +75,8 @@ def speedup(seg, playback_speed=1.5, chunk_size=150, crossfade=25):
 
     chunks = make_chunks(seg, chunk_size + ms_to_remove_per_chunk)
     if len(chunks) < 2:
-        raise Exception(
-            "Could not speed up AudioSegment, it was too short {2:0.2f}s for the current settings:\n{0}ms chunks at {1:0.1f}x speedup".format(
-                chunk_size, playback_speed, seg.duration_seconds
-            )
+        raise ValueError(
+            f"Could not speed up AudioSegment, it was too short {seg.duration_seconds:0.2f}s for the current settings:\n{chunk_size}ms chunks at {playback_speed:0.1f}x speedup"
         )
 
     # we'll actually truncate a bit less than we calculated to make up for the
@@ -107,7 +105,7 @@ def strip_silence(seg, silence_len=1000, silence_thresh=-16, padding=100):
     crossfade = padding / 2
 
     if not len(chunks):
-        return seg[0:0]
+        return seg[:0]
 
     seg = chunks[0]
     for chunk in chunks[1:]:
@@ -209,10 +207,8 @@ def invert_phase(seg, channels=(1, 1)):
         if seg.channels == 2:
             left, right = seg.split_to_mono()
         else:
-            raise Exception(
-                "Can't implicitly convert an AudioSegment with "
-                + str(seg.channels)
-                + " channels to stereo."
+            raise ValueError(
+                f"Can't implicitly convert an AudioSegment with {seg.channels} channels to stereo."
             )
 
         if channels == (1, 0):

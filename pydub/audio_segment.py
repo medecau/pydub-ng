@@ -105,7 +105,7 @@ def read_wav_audio(data, headers=None):
     fmt = fmt[0]
     pos = fmt.position + 8
     audio_format = struct.unpack_from("<H", data[pos : pos + 2])[0]
-    if audio_format != 1 and audio_format != 0xFFFE:
+    if audio_format not in [1, 0xFFFE]:
         raise CouldntDecodeError("Unknown audio format 0x%X in wav data" % audio_format)
 
     channels = struct.unpack_from("<H", data[pos + 2 : pos + 4])[0]
@@ -185,7 +185,6 @@ class AudioSegment(object):
                 "Either all audio parameters or no parameter must be specified"
             )
 
-        # all arguments are given
         elif self.sample_width is not None:
             if len(data) % (self.sample_width * self.channels) != 0:
                 raise ValueError("data length must be a multiple of '(sample_width * channels)'")
@@ -193,7 +192,6 @@ class AudioSegment(object):
             self.frame_width = self.channels * self.sample_width
             self._data = data
 
-        # keep support for 'metadata' until audio params are used everywhere
         elif kwargs.get("metadata", False):
             # internal use only
             self._data = data
@@ -205,10 +203,8 @@ class AudioSegment(object):
                 data = data if isinstance(data, (basestring, bytes)) else data.read()
             except OSError:
                 d = b""
-                reader = data.read(2**31 - 1)
-                while reader:
+                while reader := data.read(2**31 - 1):
                     d += reader
-                    reader = data.read(2**31 - 1)
                 data = d
 
             wav_data = read_wav_audio(data)
@@ -313,13 +309,10 @@ class AudioSegment(object):
 
         # ensure the output is as long as the requester is expecting
         expected_length = end - start
-        missing_frames = (expected_length - len(data)) // self.frame_width
-        if missing_frames:
+        if missing_frames := (expected_length - len(data)) // self.frame_width:
             if missing_frames > self.frame_count(ms=2):
                 raise TooManyMissingFrames(
-                    "You should never be filling in "
-                    "   more than 2 ms with silence here, "
-                    "missing frames: %s" % missing_frames
+                    f"You should never be filling in    more than 2 ms with silence here, missing frames: {missing_frames}"
                 )
             silence = audioop.mul(data[: self.frame_width], self.sample_width, 0)
             data += silence * missing_frames
@@ -341,9 +334,7 @@ class AudioSegment(object):
                 return default
             if val < 0:
                 return 0
-            if val > max_val:
-                return max_val
-            return val
+            return max_val if val > max_val else val
 
         start_i = bounded(start_sample, 0) * self.frame_width
         end_i = bounded(end_sample, max_val) * self.frame_width
@@ -389,13 +380,15 @@ class AudioSegment(object):
         else:
             return self._spawn(data=self._data * arg)
 
-    def _spawn(self, data, overrides={}):
+    def _spawn(self, data, overrides=None):
         """
         Creates a new audio segment using the metadata from the current one
         and the data passed in. Should be used whenever an AudioSegment is
         being returned by an operation that would alters the current one,
         since AudioSegment objects are immutable.
         """
+        if overrides is None:
+            overrides = {}
         # accept lists of data chunks
         if isinstance(data, list):
             data = b"".join(data)
@@ -415,7 +408,7 @@ class AudioSegment(object):
             "frame_width": self.frame_width,
             "channels": self.channels,
         }
-        metadata.update(overrides)
+        metadata |= overrides
         return self.__class__(data=data, metadata=metadata)
 
     @classmethod
@@ -512,14 +505,14 @@ class AudioSegment(object):
             format = format.lower()
             format = AUDIO_FILE_EXT_ALIASES.get(format, format)
 
-        def is_format(f):
-            f = f.lower()
-            if format == f:
+        def is_format(fmt):
+            fmt = fmt.lower()
+            if format == fmt:
                 return True
             if isinstance(orig_file, basestring):
-                return orig_file.lower().endswith(".{0}".format(f))
+                return orig_file.lower().endswith(f".{fmt}")
             if isinstance(orig_file, bytes):
-                return orig_file.lower().endswith((".{0}".format(f)).encode("utf8"))
+                return orig_file.lower().endswith(f".{fmt}".encode("utf8"))
             return False
 
         if is_format("wav"):
@@ -645,11 +638,11 @@ class AudioSegment(object):
         if start_second is None and duration is None:
             return obj
         elif start_second is not None and duration is None:
-            return obj[0:]
+            return obj[:]
         elif start_second is None and duration is not None:
             return obj[: duration * 1000]
         else:
-            return obj[0 : duration * 1000]
+            return obj[: duration * 1000]
 
     @classmethod
     def from_file(
@@ -673,13 +666,13 @@ class AudioSegment(object):
             format = format.lower()
             format = AUDIO_FILE_EXT_ALIASES.get(format, format)
 
-        def is_format(f):
-            f = f.lower()
-            if format == f:
+        def is_format(fmt):
+            fmt = fmt.lower()
+            if format == fmt:
                 return True
 
             if filename:
-                return filename.lower().endswith(".{0}".format(f))
+                return filename.lower().endswith(f".{fmt}")
 
             return False
 
@@ -824,11 +817,11 @@ class AudioSegment(object):
         if start_second is None and duration is None:
             return obj
         elif start_second is not None and duration is None:
-            return obj[0:]
+            return obj[:]
         elif start_second is None and duration is not None:
             return obj[: duration * 1000]
         else:
-            return obj[0 : duration * 1000]
+            return obj[: duration * 1000]
 
     @classmethod
     def from_mp3(cls, file, parameters=None):
@@ -909,8 +902,6 @@ class AudioSegment(object):
         cover (file)
             Set cover for audio file from image file. (png or jpg)
         """
-        id3v2_allowed_versions = ["3", "4"]
-
         if format == "raw" and (codec is not None or parameters is not None):
             raise AttributeError(
                 'Can not invoke ffmpeg when export format is "raw"; '
@@ -929,11 +920,7 @@ class AudioSegment(object):
         # wav with no ffmpeg parameters can just be written directly to out_f
         easy_wav = format == "wav" and codec is None and parameters is None
 
-        if easy_wav:
-            data = out_f
-        else:
-            data = NamedTemporaryFile(mode="wb", delete=False)
-
+        data = out_f if easy_wav else NamedTemporaryFile(mode="wb", delete=False)
         pcm_for_wav = self._data
         if self.sample_width == 1:
             # convert to unsigned integers for wav
@@ -967,7 +954,7 @@ class AudioSegment(object):
         ]
 
         if codec is None:
-            codec = self.DEFAULT_CODECS.get(format, None)
+            codec = self.DEFAULT_CODECS.get(format)
 
         if cover is not None:
             if (
@@ -994,20 +981,20 @@ class AudioSegment(object):
         if tags is not None:
             if not isinstance(tags, dict):
                 raise InvalidTag("Tags must be a dictionary.")
-            else:
-                # Extend converter command with tags
-                # print(tags)
-                for key, value in tags.items():
-                    conversion_command.extend(["-metadata", "{0}={1}".format(key, value)])
+            # Extend converter command with tags
+            # print(tags)
+            for key, value in tags.items():
+                conversion_command.extend(["-metadata", f"{key}={value}"])
 
-                if format == "mp3":
-                    # set id3v2 tag version
-                    if id3v2_version not in id3v2_allowed_versions:
-                        raise InvalidID3TagVersion(
-                            "id3v2_version not allowed, allowed versions: %s"
-                            % id3v2_allowed_versions
-                        )
-                    conversion_command.extend(["-id3v2_version", id3v2_version])
+            if format == "mp3":
+                id3v2_allowed_versions = ["3", "4"]
+
+                # set id3v2 tag version
+                if id3v2_version not in id3v2_allowed_versions:
+                    raise InvalidID3TagVersion(
+                        f"id3v2_version not allowed, allowed versions: {id3v2_allowed_versions}"
+                    )
+                conversion_command.extend(["-id3v2_version", id3v2_version])
 
         if sys.platform == "darwin" and codec == "mp3":
             conversion_command.extend(["-write_xing", "0"])
@@ -1124,7 +1111,7 @@ class AudioSegment(object):
                     converted[i] += raw_channel_data[i] // self.channels
             frame_width = self.frame_width // self.channels
         elif self.channels == 1:
-            dup_channels = [self for iChannel in range(channels)]
+            dup_channels = [self for _ in range(channels)]
             return AudioSegment.from_mono_audiosegments(*dup_channels)
         else:
             raise ValueError(
@@ -1165,10 +1152,9 @@ class AudioSegment(object):
 
     @property
     def dBFS(self):
-        rms = self.rms
-        if not rms:
-            return -float("infinity")
-        return ratio_to_db(self.rms / self.max_possible_amplitude)
+        if rms := self.rms:
+            return ratio_to_db(rms / self.max_possible_amplitude)
+        return -float("infinity")
 
     @property
     def max(self):
@@ -1334,15 +1320,11 @@ class AudioSegment(object):
             return seg1._spawn(seg1._data + seg2._data)
         elif crossfade > len(self):
             raise ValueError(
-                "Crossfade is longer than the original AudioSegment ({}ms > {}ms)".format(
-                    crossfade, len(self)
-                )
+                f"Crossfade is longer than the original AudioSegment ({crossfade}ms > {len(self)}ms)"
             )
         elif crossfade > len(seg):
             raise ValueError(
-                "Crossfade is longer than the appended AudioSegment ({}ms > {}ms)".format(
-                    crossfade, len(seg)
-                )
+                f"Crossfade is longer than the appended AudioSegment ({crossfade}ms > {len(seg)}ms)"
             )
 
         xf = seg1[-crossfade:].fade(to_gain=-120, start=0, end=float("inf"))
@@ -1408,14 +1390,11 @@ class AudioSegment(object):
 
         from_power = db_to_float(from_gain)
 
-        output = []
-
         # original data - up until the crossfade portion, as is
         before_fade = self[:start]._data
         if from_gain != 0:
             before_fade = audioop.mul(before_fade, self.sample_width, from_power)
-        output.append(before_fade)
-
+        output = [before_fade]
         gain_delta = db_to_float(to_gain) - from_power
 
         # fades longer than 100ms can use coarse fading (one gain step per ms),

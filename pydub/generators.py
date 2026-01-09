@@ -114,10 +114,10 @@ class Sawtooth(SignalGenerator):
 
         while True:
             cycle_position = sample_n % cycle_length
-            if cycle_position < midpoint:
+            if cycle_position < ascend_length:
                 yield (2 * cycle_position / ascend_length) - 1.0
             else:
-                yield 1.0 - (2 * (cycle_position - midpoint) / descend_length)
+                yield 1.0 - 2 * (cycle_position - ascend_length) / descend_length
             sample_n += 1
 
 

@@ -51,5 +51,5 @@ def test_make_chunks(dummy_audio_segment):
         assert abs(total_chunks_length - len(seg)) < len(chunks)
 
         # Test that all chunks except the last one have the correct size
-        for i, chunk in enumerate(chunks[:-1]):
+        for chunk in chunks[:-1]:
             assert len(chunk) == chunk_size

@@ -20,7 +20,7 @@ class error(Exception):
 
 
 def _check_size(size):
-    if size != 1 and size != 2 and size != 4:
+    if size not in (1, 2, 4):
         raise error("Size should be 1, 2 or 4")
 
 
@@ -102,8 +102,7 @@ def _overflow(val, size, signed=True):
     if signed:
         offset = 2 ** (bits - 1)
         return ((val + offset) % (2**bits)) - offset
-    else:
-        return val % (2**bits)
+    return val % (2**bits)
 
 
 def getsample(cp, size, i):
@@ -136,9 +135,7 @@ def minmax(cp, size):
 def avg(cp, size):
     _check_params(len(cp), size)
     sample_count = _sample_count(cp, size)
-    if sample_count == 0:
-        return 0
-    return sum(_get_samples(cp, size)) / sample_count
+    return 0 if sample_count == 0 else sum(_get_samples(cp, size)) / sample_count
 
 
 def rms(cp, size):
@@ -148,16 +145,12 @@ def rms(cp, size):
     if sample_count == 0:
         return 0
 
-    sum_squares = sum(sample**2 for sample in _get_samples(cp, size))
-    return int(math.sqrt(sum_squares / sample_count))
+    return int(math.sqrt(sum(sample**2 for sample in _get_samples(cp, size)) / sample_count))
 
 
 def _sum2(cp1, cp2, length):
     size = 2
-    total = 0
-    for i in range(length):
-        total += getsample(cp1, size, i) * getsample(cp2, size, i)
-    return total
+    return sum(getsample(cp1, size, i) * getsample(cp2, size, i) for i in range(length))
 
 
 def findfit(cp1, cp2):
@@ -277,10 +270,7 @@ def avgpp(cp, size):
         if diff != 0:
             prevdiff = diff
 
-    if nextreme == 0:
-        return 0
-
-    return avg / nextreme
+    return 0 if nextreme == 0 else avg / nextreme
 
 
 def maxpp(cp, size):
@@ -289,7 +279,7 @@ def maxpp(cp, size):
 
     prevextremevalid = False
     prevextreme = None
-    max = 0
+    max_val = 0
 
     prevval = getsample(cp, size, 0)
     val = getsample(cp, size, 1)
@@ -303,8 +293,8 @@ def maxpp(cp, size):
         if diff * prevdiff < 0:
             if prevextremevalid:
                 extremediff = abs(prevval - prevextreme)
-                if extremediff > max:
-                    max = extremediff
+                if extremediff > max_val:
+                    max_val = extremediff
             prevextremevalid = True
             prevextreme = prevval
 
@@ -312,7 +302,7 @@ def maxpp(cp, size):
         if diff != 0:
             prevdiff = diff
 
-    return max
+    return max_val
 
 
 def cross(cp, size):

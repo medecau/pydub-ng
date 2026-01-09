@@ -28,7 +28,7 @@ def test_partial_load_start_second_equals_cropped_mp3_audio_segment(audio_paths)
     """Test partial loading start_second parameter with MP3."""
     mp3_path = audio_paths["mp3"]
     partial_seg1 = AudioSegment.from_file(mp3_path)[1000:]
-    partial_seg2 = AudioSegment.from_file(mp3_path, start_second=1.0)[0:]
+    partial_seg2 = AudioSegment.from_file(mp3_path, start_second=1.0)
     assert len(partial_seg1) == len(partial_seg2)
     assert partial_seg1._data == partial_seg2._data
 
@@ -57,7 +57,7 @@ def test_partial_load_start_second_equals_cropped_wav_audio_segment(audio_paths)
     """Test partial loading start_second parameter with WAV."""
     wav_path = audio_paths["wav"]
     partial_seg1 = AudioSegment.from_file(wav_path)[1000:]
-    partial_seg2 = AudioSegment.from_file(wav_path, start_second=1.0)[0:]
+    partial_seg2 = AudioSegment.from_file(wav_path, start_second=1.0)
     assert len(partial_seg1) == len(partial_seg2)
     assert partial_seg1._data == partial_seg2._data
 
@@ -112,7 +112,7 @@ def test_partial_load_start_second_equals_cropped_raw_audio_segment(audio_paths)
         frame_rate=32000,
         channels=2,
         start_second=1.0,
-    )[0:]
+    )
     assert len(partial_seg1) == len(partial_seg2)
     assert partial_seg1._data == partial_seg2._data
 

@@ -69,29 +69,25 @@ def media_files(data_dir):
 @pytest.fixture
 def temp_wav_file(tmp_path):
     """Create a temporary WAV file for testing."""
-    file_path = tmp_path / "temp_output.wav"
-    return file_path
+    return tmp_path / "temp_output.wav"
 
 
 @pytest.fixture
 def temp_mp3_file(tmp_path):
     """Create a temporary MP3 file for testing."""
-    file_path = tmp_path / "temp_output.mp3"
-    return file_path
+    return tmp_path / "temp_output.mp3"
 
 
 @pytest.fixture
 def temp_ogg_file(tmp_path):
     """Create a temporary OGG file for testing."""
-    file_path = tmp_path / "temp_output.ogg"
-    return file_path
+    return tmp_path / "temp_output.ogg"
 
 
 @pytest.fixture
 def temp_webm_file(tmp_path):
     """Create a temporary WEBM file for testing."""
-    file_path = tmp_path / "temp_output.webm"
-    return file_path
+    return tmp_path / "temp_output.webm"
 
 
 @pytest.fixture
@@ -399,7 +395,7 @@ def test_indexing(test_segments):
     for part in short:
         rebuilt1 += part
 
-    rebuilt2 = sum([part for part in short])
+    rebuilt2 = sum(list(short))
 
     assert short._data == rebuilt1._data
     assert short._data == rebuilt2._data
@@ -705,7 +701,7 @@ def test_equal_and_not_equal(test_segments):
     wav = AudioSegment.from_wav(wav_file)
 
     assert seg1 == wav
-    assert not (seg1 != wav)
+    assert seg1 == wav
 
 
 def test_duration(test_segments):
@@ -992,7 +988,7 @@ def test_exporting_to_ogg_uses_default_codec_when_codec_param_is_none(media_file
 def test_zero_length_segment(test_segments):
     """Test creating a zero-length segment."""
     seg1 = test_segments["seg1"]
-    assert len(seg1[0:0]) == 0
+    assert len(seg1[:0]) == 0
 
 
 def test_invert():
@@ -1004,24 +1000,24 @@ def test_invert():
         s_mono.invert_phase(channels=(1, 0))
 
     s_inv = s.invert_phase()
-    assert not (s == s_inv)
+    assert s != s_inv
     assert s.rms == s_inv.rms
     assert s == s_inv.invert_phase()
 
     s_inv_right = s.invert_phase(channels=(0, 1))
     left, right = s_inv_right.split_to_mono()
 
-    assert not (s_mono == s_inv_right)
-    assert not (s_inv == s_inv_right)
+    assert s_mono != s_inv_right
+    assert s_inv != s_inv_right
     assert left == s_mono
-    assert not (right == s_mono)
+    assert right != s_mono
 
     s_inv_left = s.invert_phase(channels=(1, 0))
     left, right = s_inv_left.split_to_mono()
 
-    assert not (s_mono == s_inv_left)
-    assert not (s_inv == s_inv_left)
-    assert not (left == s_mono)
+    assert s_mono != s_inv_left
+    assert s_inv != s_inv_left
+    assert left != s_mono
     assert right == s_mono
 
 

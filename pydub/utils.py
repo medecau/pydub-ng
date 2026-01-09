@@ -85,10 +85,7 @@ def db_to_float(db, using_amplitude=True):
     ratio in power.
     """
     db = float(db)
-    if using_amplitude:
-        return 10 ** (db / 20)
-    else:  # using power
-        return 10 ** (db / 10)
+    return 10 ** (db / 20) if using_amplitude else 10 ** (db / 10)
 
 
 def ratio_to_db(ratio, val2=None, using_amplitude=True):
@@ -100,16 +97,13 @@ def ratio_to_db(ratio, val2=None, using_amplitude=True):
 
     # accept 2 values and use the ratio of val1 to val2
     if val2 is not None:
-        ratio = ratio / val2
+        ratio /= val2
 
     # special case for multiply-by-zero (convert to silence)
     if ratio == 0:
         return -float("inf")
 
-    if using_amplitude:
-        return 20 * log(ratio, 10)
-    else:  # using power
-        return 10 * log(ratio, 10)
+    return 20 * log(ratio, 10) if using_amplitude else 10 * log(ratio, 10)
 
 
 def register_pydub_effect(fn, name=None):
@@ -307,7 +301,7 @@ def mediainfo_json(filepath, read_ahead_limit=-1):
     extra_info = get_extra_info(stderr)
 
     audio_streams = [x for x in info["streams"] if x["codec_type"] == "audio"]
-    if len(audio_streams) == 0:
+    if not audio_streams:
         return info
 
     # We just operate on the first audio stream in case there are more
@@ -321,13 +315,13 @@ def mediainfo_json(filepath, read_ahead_limit=-1):
         m = re.match(r"([su]([0-9]{1,2})p?) \(([0-9]{1,2}) bit\)$", token)
         m2 = re.match(r"([su]([0-9]{1,2})p?)( \(default\))?$", token)
         if m:
-            set_property(stream, "sample_fmt", m.group(1))
-            set_property(stream, "bits_per_sample", int(m.group(2)))
-            set_property(stream, "bits_per_raw_sample", int(m.group(3)))
+            set_property(stream, "sample_fmt", m[1])
+            set_property(stream, "bits_per_sample", int(m[2]))
+            set_property(stream, "bits_per_raw_sample", int(m[3]))
         elif m2:
-            set_property(stream, "sample_fmt", m2.group(1))
-            set_property(stream, "bits_per_sample", int(m2.group(2)))
-            set_property(stream, "bits_per_raw_sample", int(m2.group(2)))
+            set_property(stream, "sample_fmt", m2[1])
+            set_property(stream, "bits_per_sample", int(m2[2]))
+            set_property(stream, "bits_per_raw_sample", int(m2[2]))
         elif re.match(r"(flt)p?( \(default\))?$", token):
             set_property(stream, "sample_fmt", token)
             set_property(stream, "bits_per_sample", 32)
@@ -360,10 +354,7 @@ def mediainfo(filepath):
         output = output.replace("\r", "")
 
     for line in output.split("\n"):
-        # print(line)
-        mobj = rgx.match(line)
-
-        if mobj:
+        if mobj := rgx.match(line):
             # print(mobj.groups())
             inner_dict, key, value = mobj.groups()
 
