@@ -145,9 +145,11 @@ def fix_wav_headers(data):
     if not headers or headers[-1].id != b"data":
         return
 
-    # TODO: Handle huge files in some other way
-    if len(data) > 2**32:
-        raise CouldntDecodeError("Unable to process >4GB files")
+    if len(data) >= 2**32:
+        raise CouldntDecodeError(
+            "Unable to process ≥4GB WAV files due to format limitations. "
+            "Consider using FLAC format instead, or process audio in smaller segments."
+        )
 
     # Set the file size in the RIFF chunk descriptor
     data[4:8] = struct.pack("<I", len(data) - 8)
