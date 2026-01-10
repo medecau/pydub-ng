@@ -45,3 +45,11 @@ def dummy_audio_segment():
     channels = 2
 
     return AudioSegment.silent(duration=duration, frame_rate=sample_rate).set_channels(channels)
+
+
+def pytest_collection_modifyitems(items):
+    """Reorder tests so smoke tests run first."""
+    smoke_tests = [item for item in items if "test_smoke" in item.nodeid]
+    other_tests = [item for item in items if item not in smoke_tests]
+
+    items[:] = smoke_tests + other_tests
