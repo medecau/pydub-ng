@@ -171,16 +171,6 @@ class AudioSegment(object):
 
     converter = get_encoder_name()  # either ffmpeg or avconv
 
-    # TODO: remove in 1.0 release
-    # maintain backwards compatibility for ffmpeg attr (now called converter)
-    @classproperty
-    def ffmpeg(cls):
-        return cls.converter
-
-    @ffmpeg.setter
-    def ffmpeg(cls, val):
-        cls.converter = val
-
     DEFAULT_CODECS = {"ogg": "libvorbis"}
 
     def __init__(self, data=None, *args, **kwargs):
