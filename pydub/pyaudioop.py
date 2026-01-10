@@ -10,6 +10,27 @@ except ImportError:  # Python 3.9+
 
 from ctypes import create_string_buffer
 
+# Lookup tables for sample bounds and struct formats
+_SAMPLE_BOUNDS = {
+    # (size, signed): (minval, maxval)
+    (1, True): (-0x80, 0x7F),
+    (1, False): (0, 0xFF),
+    (2, True): (-0x8000, 0x7FFF),
+    (2, False): (0, 0xFFFF),
+    (4, True): (-0x80000000, 0x7FFFFFFF),
+    (4, False): (0, 0xFFFFFFFF),
+}
+
+_STRUCT_FORMATS = {
+    # (size, signed): format_char
+    (1, True): "b",
+    (1, False): "B",
+    (2, True): "h",
+    (2, False): "H",
+    (4, True): "i",
+    (4, False): "I",
+}
+
 
 class error(Exception):
     pass
@@ -36,12 +57,7 @@ def _get_samples(cp, size, signed=True):
 
 
 def _struct_format(size, signed):
-    if size == 1:
-        return "b" if signed else "B"
-    elif size == 2:
-        return "h" if signed else "H"
-    elif size == 4:
-        return "i" if signed else "I"
+    return _STRUCT_FORMATS[(size, signed)]
 
 
 def _get_sample(cp, size, i, signed=True):
@@ -57,29 +73,11 @@ def _put_sample(cp, size, i, val, signed=True):
 
 
 def _get_maxval(size, signed=True):
-    if signed and size == 1:
-        return 0x7F
-    elif size == 1:
-        return 0xFF
-    elif signed and size == 2:
-        return 0x7FFF
-    elif size == 2:
-        return 0xFFFF
-    elif signed and size == 4:
-        return 0x7FFFFFFF
-    elif size == 4:
-        return 0xFFFFFFFF
+    return _SAMPLE_BOUNDS[(size, signed)][1]
 
 
 def _get_minval(size, signed=True):
-    if not signed:
-        return 0
-    elif size == 1:
-        return -0x80
-    elif size == 2:
-        return -0x8000
-    elif size == 4:
-        return -0x80000000
+    return _SAMPLE_BOUNDS[(size, signed)][0]
 
 
 def _get_clipfn(size, signed=True):
