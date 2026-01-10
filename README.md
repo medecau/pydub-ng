@@ -6,7 +6,7 @@ Pydub lets you do stuff to audio in a way that isn't stupid.
 
 **Stuff you might be looking for**:
  - [Installing Pydub](https://github.com/medecau/pydub-ng#installation)
- - [API Documentation](https://github.com/medecau/pydub-ng/blob/main/API.markdown)
+ - [API Documentation](https://github.com/medecau/pydub-ng/blob/main/API.md)
  - [Dependencies](https://github.com/medecau/pydub-ng#dependencies)
  - [Playback](https://github.com/medecau/pydub-ng#playback)
  - [Setting up ffmpeg](https://github.com/medecau/pydub-ng#getting-ffmpeg-set-up)
@@ -341,4 +341,3 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
