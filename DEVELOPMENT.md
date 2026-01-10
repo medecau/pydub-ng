@@ -14,6 +14,9 @@ bash scripts/init-dev.sh
 
 # OR install manually
 pip install -e ".[dev]"
+
+# OR install with scipy support (for testing scipy_effects)
+pip install -e ".[dev,scipy]"
 ```
 
 The `init-dev.sh` script will:
@@ -48,7 +51,7 @@ ln -sf "$(pwd)/scripts/pre-push" .git/hooks/pre-push
 
 ### Using tox (recommended for CI)
 
-Tox runs tests across multiple Python versions (3.10, 3.11, 3.12):
+Tox runs tests across multiple Python versions (3.10, 3.11, 3.12, 3.13, 3.14) with scipy support enabled:
 
 ```bash
 # Run tests on all supported Python versions

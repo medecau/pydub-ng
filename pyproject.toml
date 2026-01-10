@@ -33,6 +33,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0.0", "pytest-cov>=4.1.0", "pytest-datadir>=1.4.1", "build>=1.0.0", "ruff>=0.1.0", "diff-cover>=8.0.0"]
+scipy = ["scipy>=1.0.0"]
 
 [project.urls]
 Homepage = "https://github.com/medecau/pydub-ng"
@@ -48,6 +49,9 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 ignore = ["E501"]  # Ignore line too long errors in existing code
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402", "F401"]  # Allow imports after code and unused imports in tests
 
 [tool.ruff.format]
 quote-style = "double"
@@ -72,7 +76,7 @@ uv_python_preference = "only-managed"
 
 [tool.tox.env_run_base]
 runner = "uv-venv-runner"
-extras = ["dev"]
+extras = ["dev", "scipy"]
 commands = [
     ["pytest", "tests/", "-v", "--cov=pydub", "--cov-report=term"]
 ]

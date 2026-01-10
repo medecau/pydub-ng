@@ -7,7 +7,7 @@ If you're looking for some functionality in particular, it's a good idea to take
 Currently Undocumented:
 
 - Playback (`pydub.playback`)
-- Signal Processing (compression, EQ, normalize, speed change - `pydub.effects`, `pydub.scipy_effects`)
+- Signal Processing (compression, EQ, normalize, speed change - `pydub.effects`, `pydub.scipy_effects` [auto-imported if scipy installed])
 - Signal generators (Sine, Square, Sawtooth, Whitenoise, etc - `pydub.generators`)
 - Effect registration system (basically the `pydub.utils.register_pydub_effect` decorator)
 

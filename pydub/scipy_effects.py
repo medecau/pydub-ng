@@ -1,19 +1,65 @@
+"""Scipy-based audio filters providing higher quality than the basic effects.
+
+This module provides scipy-powered versions of high_pass_filter, low_pass_filter,
+and adds band_pass_filter and eq (parametric equalizer).
+
+IMPORTANT: This module is AUTOMATICALLY imported by pydub if scipy is installed.
+The scipy versions OVERWRITE the basic filter methods from pydub.effects, offering:
+- Configurable filter order (steeper rolloff)
+- Better frequency response (Butterworth design)
+- Additional effects (band_pass_filter, eq)
+
+Requirements:
+    pip install scipy
+    # or
+    pip install pydub-ng[scipy]
+
+Usage:
+    from pydub import AudioSegment
+
+    # Check if scipy filters are available
+    print(AudioSegment.has_scipy_filters)  # True if scipy installed
+
+    audio = AudioSegment.from_file("song.mp3")
+    audio.high_pass_filter(500, order=5)  # Uses scipy version if available
+    audio.band_pass_filter(200, 2000)     # Only available with scipy
+    audio.eq(1000, gain_dB=3)             # Parametric EQ
 """
-This module provides scipy versions of high_pass_filter, and low_pass_filter
-as well as an additional band_pass_filter.
 
-Of course, you will need to install scipy for these to work.
-
-When this module is imported the high and low pass filters from this module
-will be used when calling audio_segment.high_pass_filter() and
-audio_segment.high_pass_filter() instead of the slower, less powerful versions
-provided by pydub.effects.
-"""
-
-from scipy.signal import butter, sosfilt
+try:
+    from scipy.signal import butter, sosfilt
+except ImportError as e:
+    raise ImportError("scipy_effects requires scipy. Install with: pip install scipy") from e
 
 from .audio_segment import AudioSegment
 from .utils import ms_to_stereo, register_pydub_effect, stereo_to_ms
+
+
+def _validate_filter_params(seg, cutoff_freq, order):
+    """Validate common filter parameters.
+
+    Args:
+        seg: AudioSegment to filter
+        cutoff_freq: Either a single frequency or [low, high] for bandpass
+        order: Filter order (must be >= 1)
+
+    Raises:
+        ValueError: If parameters are invalid
+    """
+    nyquist = seg.frame_rate / 2
+
+    if order < 1:
+        raise ValueError(f"order must be a positive integer, got {order}")
+
+    if isinstance(cutoff_freq, (list, tuple)):
+        low, high = cutoff_freq
+        if low >= high:
+            raise ValueError(f"low_cutoff ({low}) must be less than high_cutoff ({high})")
+        if high >= nyquist:
+            raise ValueError(f"high_cutoff ({high}) must be below Nyquist frequency ({nyquist})")
+    else:
+        if cutoff_freq >= nyquist:
+            raise ValueError(f"cutoff ({cutoff_freq}) must be below Nyquist frequency ({nyquist})")
 
 
 def _mk_butter_filter(freq, type, order):
@@ -52,18 +98,21 @@ def _mk_butter_filter(freq, type, order):
 
 @register_pydub_effect
 def band_pass_filter(seg, low_cutoff_freq, high_cutoff_freq, order=5):
+    _validate_filter_params(seg, [low_cutoff_freq, high_cutoff_freq], order)
     filter_fn = _mk_butter_filter([low_cutoff_freq, high_cutoff_freq], "band", order=order)
     return seg.apply_mono_filter_to_each_channel(filter_fn)
 
 
 @register_pydub_effect
 def high_pass_filter(seg, cutoff_freq, order=5):
+    _validate_filter_params(seg, cutoff_freq, order)
     filter_fn = _mk_butter_filter(cutoff_freq, "highpass", order=order)
     return seg.apply_mono_filter_to_each_channel(filter_fn)
 
 
 @register_pydub_effect
 def low_pass_filter(seg, cutoff_freq, order=5):
+    _validate_filter_params(seg, cutoff_freq, order)
     filter_fn = _mk_butter_filter(cutoff_freq, "lowpass", order=order)
     return seg.apply_mono_filter_to_each_channel(filter_fn)
 

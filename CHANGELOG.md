@@ -1,3 +1,14 @@
+# Unreleased
+
+## Changed
+- SciPy-based audio filters are now automatically imported when scipy is installed, eliminating the need for manual `import pydub.scipy_effects`
+- Added `AudioSegment.has_scipy_filters` property to check scipy filter availability at runtime
+
+## Added
+- Comprehensive test suite for scipy_effects with 93% coverage (27 tests)
+- Parameter validation for scipy filters (Nyquist frequency and filter order checks)
+- Helpful ImportError message when scipy is missing but scipy_effects is imported directly
+
 # v0.25.1
 - Fix crashing bug in new scipy-powered EQ effects
 

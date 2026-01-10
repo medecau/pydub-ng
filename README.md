@@ -269,6 +269,40 @@ song.export("out.ogg", format="ogg")  # Is the same as:
 song.export("out.ogg", format="ogg", codec="libvorbis")
 ```
 
+### Advanced Filters with SciPy
+
+For higher quality filters with configurable rolloff, simply install scipy:
+
+```bash
+pip install scipy
+# or install pydub-ng with scipy support
+pip install pydub-ng[scipy]
+```
+
+The scipy filters are **automatically enabled** when scipy is installed:
+
+```python
+from pydub import AudioSegment
+
+audio = AudioSegment.from_file("audio.mp3")
+
+# Check if scipy filters are available
+if AudioSegment.has_scipy_filters:
+    print("Using high-quality scipy filters!")
+
+# High-order Butterworth filters (automatically used if scipy installed)
+audio = audio.high_pass_filter(200, order=5)   # 5th order = -30dB/octave
+audio = audio.low_pass_filter(8000, order=3)   # 3rd order = -18dB/octave
+
+# Band-pass filter (only available with scipy)
+audio = audio.band_pass_filter(300, 3000)
+
+# Parametric EQ (only available with scipy)
+audio = audio.eq(1000, bandwidth=200, gain_dB=6, filter_mode="peak")
+```
+
+**Note:** When scipy is installed, the basic filter implementations are automatically replaced with higher-quality scipy versions. Falls back to basic filters if scipy is not available.
+
 ## Example Use
 
 Suppose you have a directory filled with *mp4* and *flv* videos and you want to convert all of them to *mp3* so you can listen to  them on your mp3 player.
