@@ -1,13 +1,33 @@
-# Unreleased
+# v0.3.0 - Major Improvements & Breaking Changes
 
-## Changed
-- SciPy-based audio filters are now automatically imported when scipy is installed, eliminating the need for manual `import pydub.scipy_effects`
-- Added `AudioSegment.has_scipy_filters` property to check scipy filter availability at runtime
+## 🚨 Breaking Changes
+- **Removed deprecated `AudioSegment.ffmpeg` property** - Use `AudioSegment.converter` instead (deprecated since 2013)
+- **Dropped Python 2 compatibility** - Minimum version is now Python 3.10
 
-## Added
-- Comprehensive test suite for scipy_effects with 93% coverage (27 tests)
-- Parameter validation for scipy filters (Nyquist frequency and filter order checks)
-- Helpful ImportError message when scipy is missing but scipy_effects is imported directly
+## ✨ New Features
+- **Auto-import scipy filters** - SciPy-based filters now load automatically when scipy is installed (no need for manual `import pydub.scipy_effects`)
+- **Runtime scipy detection** - New `AudioSegment.has_scipy_filters` property to check availability
+- **Better error messages** - Large WAV file errors now explain the 4GB limitation and suggest alternatives (FLAC, chunking)
+
+## 🛠️ Improvements
+- **Comprehensive scipy test coverage** - 27 new tests covering scipy_effects (93% coverage)
+- **Input validation for scipy filters** - Nyquist frequency and filter order checks prevent silent failures
+- **Helpful import errors** - Clear guidance when scipy is missing
+- **Fixed double-slicing bug** - Partial file loading no longer applies ffmpeg `-ss` and Python slicing simultaneously
+- **Code quality improvements** - Applied Sourcery recommendations across codebase
+- **Modern test infrastructure** - Migrated to pytest with tox-uv for faster CI
+- **Automated quality checks** - Git hooks for pre-commit formatting and pre-push testing
+
+## 📚 Documentation
+- Document release process in CONTRIBUTING.md
+- Rename API.markdown → API.md for consistency
+- Add development setup automation scripts
+- Comprehensive inline documentation improvements
+
+## 🏗️ Infrastructure
+- GitHub Actions CI/CD pipeline with multi-version testing (Python 3.10-3.14)
+- Pre-commit/pre-push hooks with ruff and diff-quality
+- Coverage reporting with pytest-cov
 
 # v0.25.1
 - Fix crashing bug in new scipy-powered EQ effects
