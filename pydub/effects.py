@@ -1,6 +1,5 @@
 import array
 import math
-import sys
 
 from .exceptions import InvalidDuration
 from .silence import split_on_silence
@@ -12,9 +11,6 @@ from .utils import (
     ratio_to_db,
     register_pydub_effect,
 )
-
-if sys.version_info >= (3, 0):
-    xrange = range
 
 
 @register_pydub_effect
@@ -164,7 +160,7 @@ def compress_dynamic_range(seg, threshold=-20.0, ratio=4.0, attack=5.0, release=
 
     attack_frames = seg.frame_count(ms=attack)
     release_frames = seg.frame_count(ms=release)
-    for i in xrange(int(seg.frame_count())):
+    for i in range(int(seg.frame_count())):
         rms_now = rms_at(i)
 
         # with a ratio of 4.0 this means the volume will exceed the threshold by

@@ -1,5 +1,3 @@
-from __future__ import division
-
 import json
 import os
 import re
@@ -18,9 +16,6 @@ except ImportError:
         from . import pyaudioop as audioop
     except ImportError:
         audioop = None
-
-if sys.version_info >= (3, 0):
-    basestring = str
 
 FRAME_WIDTHS = {
     8: 1,
@@ -60,7 +55,7 @@ def _fd_or_path_or_tempfile(fd, mode="w+b", tempfile=True):
         fd = TemporaryFile(mode=mode)
         close_fd = True
 
-    if isinstance(fd, basestring):
+    if isinstance(fd, str):
         fd = open(fd, mode=mode)
         close_fd = True
 
@@ -118,7 +113,7 @@ def register_pydub_effect(fn, name=None):
         def normalize_audio_segment(audio_segment):
             ...
     """
-    if isinstance(fn, basestring):
+    if isinstance(fn, str):
         name = fn
         return lambda fn: register_pydub_effect(fn, name)
 
@@ -213,21 +208,10 @@ def get_prober_name():
 
 
 def fsdecode(filename):
-    """Wrapper for os.fsdecode which was introduced in python 3.2 ."""
-
-    if sys.version_info >= (3, 2):
-        PathLikeTypes = (basestring, bytes)
-        if sys.version_info >= (3, 6):
-            PathLikeTypes += (os.PathLike,)
-        if isinstance(filename, PathLikeTypes):
-            return os.fsdecode(filename)
-    else:
-        if isinstance(filename, bytes):
-            return filename.decode(sys.getfilesystemencoding())
-        if isinstance(filename, basestring):
-            return filename
-
-    raise TypeError("type {0} not accepted by fsdecode".format(type(filename)))
+    """Wrapper for os.fsdecode."""
+    if isinstance(filename, (str, bytes, os.PathLike)):
+        return os.fsdecode(filename)
+    raise TypeError(f"type {type(filename)} not accepted by fsdecode")
 
 
 def get_extra_info(stderr):

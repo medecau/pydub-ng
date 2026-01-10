@@ -1,5 +1,3 @@
-from __future__ import division
-
 import array
 import base64
 import os
@@ -32,10 +30,6 @@ from .utils import (
     ratio_to_db,
 )
 
-if sys.version_info >= (3, 0):
-    basestring = str
-    xrange = range
-
 
 class ClassPropertyDescriptor(object):
     def __init__(self, fget, fset=None):
@@ -65,6 +59,26 @@ def classproperty(func):
         func = classmethod(func)
 
     return ClassPropertyDescriptor(func)
+
+
+def _apply_time_slice(audio_segment, start_second=None, duration=None):
+    """Apply start_second and duration slicing to an AudioSegment.
+
+    Args:
+        audio_segment: The AudioSegment to slice
+        start_second: Start time in seconds (None = from beginning)
+        duration: Duration in seconds (None = to end)
+
+    Returns:
+        Sliced AudioSegment
+    """
+    if start_second is None and duration is None:
+        return audio_segment
+
+    start_ms = (start_second or 0) * 1000
+    end_ms = None if duration is None else start_ms + duration * 1000
+
+    return audio_segment[start_ms:end_ms]
 
 
 AUDIO_FILE_EXT_ALIASES = {
@@ -200,7 +214,7 @@ class AudioSegment(object):
         else:
             # normal construction
             try:
-                data = data if isinstance(data, (basestring, bytes)) else data.read()
+                data = data if isinstance(data, (str, bytes)) else data.read()
             except OSError:
                 d = b""
                 while reader := data.read(2**31 - 1):
@@ -285,13 +299,13 @@ class AudioSegment(object):
         return not (self == other)
 
     def __iter__(self):
-        return (self[i] for i in xrange(len(self)))
+        return (self[i] for i in range(len(self)))
 
     def __getitem__(self, millisecond):
         if isinstance(millisecond, slice):
             if millisecond.step:
                 return (
-                    self[i : i + millisecond.step] for i in xrange(*millisecond.indices(len(self)))
+                    self[i : i + millisecond.step] for i in range(*millisecond.indices(len(self)))
                 )
 
             start = millisecond.start if millisecond.start is not None else 0
@@ -509,7 +523,7 @@ class AudioSegment(object):
             fmt = fmt.lower()
             if format == fmt:
                 return True
-            if isinstance(orig_file, basestring):
+            if isinstance(orig_file, str):
                 return orig_file.lower().endswith(f".{fmt}")
             if isinstance(orig_file, bytes):
                 return orig_file.lower().endswith(f".{fmt}".encode("utf8"))
@@ -520,14 +534,7 @@ class AudioSegment(object):
                 obj = cls._from_safe_wav(file)
                 if close_file:
                     file.close()
-                if start_second is None and duration is None:
-                    return obj
-                elif start_second is not None and duration is None:
-                    return obj[start_second * 1000 :]
-                elif start_second is None and duration is not None:
-                    return obj[: duration * 1000]
-                else:
-                    return obj[start_second * 1000 : (start_second + duration) * 1000]
+                return _apply_time_slice(obj, start_second, duration)
             except Exception:
                 file.seek(0)
         elif is_format("raw") or is_format("pcm"):
@@ -543,14 +550,7 @@ class AudioSegment(object):
             obj = cls(data=file.read(), metadata=metadata)
             if close_file:
                 file.close()
-            if start_second is None and duration is None:
-                return obj
-            elif start_second is not None and duration is None:
-                return obj[start_second * 1000 :]
-            elif start_second is None and duration is not None:
-                return obj[: duration * 1000]
-            else:
-                return obj[start_second * 1000 : (start_second + duration) * 1000]
+            return _apply_time_slice(obj, start_second, duration)
 
         input_file = NamedTemporaryFile(mode="wb", delete=False)
         try:
@@ -635,14 +635,8 @@ class AudioSegment(object):
             os.unlink(input_file.name)
             os.unlink(output.name)
 
-        if start_second is None and duration is None:
-            return obj
-        elif start_second is not None and duration is None:
-            return obj[:]
-        elif start_second is None and duration is not None:
-            return obj[: duration * 1000]
-        else:
-            return obj[: duration * 1000]
+        # ffmpeg already applied start_second and duration via -ss and -t flags
+        return obj
 
     @classmethod
     def from_file(
@@ -678,16 +672,7 @@ class AudioSegment(object):
 
         if is_format("wav"):
             try:
-                if start_second is None and duration is None:
-                    return cls._from_safe_wav(file)
-                elif start_second is not None and duration is None:
-                    return cls._from_safe_wav(file)[start_second * 1000 :]
-                elif start_second is None and duration is not None:
-                    return cls._from_safe_wav(file)[: duration * 1000]
-                else:
-                    return cls._from_safe_wav(file)[
-                        start_second * 1000 : (start_second + duration) * 1000
-                    ]
+                return _apply_time_slice(cls._from_safe_wav(file), start_second, duration)
             except Exception:
                 file.seek(0)
         elif is_format("raw") or is_format("pcm"):
@@ -700,16 +685,9 @@ class AudioSegment(object):
                 "channels": channels,
                 "frame_width": channels * sample_width,
             }
-            if start_second is None and duration is None:
-                return cls(data=file.read(), metadata=metadata)
-            elif start_second is not None and duration is None:
-                return cls(data=file.read(), metadata=metadata)[start_second * 1000 :]
-            elif start_second is None and duration is not None:
-                return cls(data=file.read(), metadata=metadata)[: duration * 1000]
-            else:
-                return cls(data=file.read(), metadata=metadata)[
-                    start_second * 1000 : (start_second + duration) * 1000
-                ]
+            return _apply_time_slice(
+                cls(data=file.read(), metadata=metadata), start_second, duration
+            )
 
         conversion_command = [
             cls.converter,
@@ -814,14 +792,8 @@ class AudioSegment(object):
         if close_file:
             file.close()
 
-        if start_second is None and duration is None:
-            return obj
-        elif start_second is not None and duration is None:
-            return obj[:]
-        elif start_second is None and duration is not None:
-            return obj[: duration * 1000]
-        else:
-            return obj[: duration * 1000]
+        # ffmpeg already applied start_second and duration via -ss and -t flags
+        return obj
 
     @classmethod
     def from_mp3(cls, file, parameters=None):

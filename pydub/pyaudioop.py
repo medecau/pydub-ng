@@ -10,10 +10,6 @@ except ImportError:  # Python 3.9+
 
 from ctypes import create_string_buffer
 
-# For Python 3 compatibility
-if not hasattr(bytes, "buffer"):
-    buffer = memoryview
-
 
 class error(Exception):
     pass
@@ -52,7 +48,7 @@ def _get_sample(cp, size, i, signed=True):
     fmt = _struct_format(size, signed)
     start = i * size
     end = start + size
-    return struct.unpack_from(fmt, buffer(cp)[start:end])[0]
+    return struct.unpack_from(fmt, memoryview(cp)[start:end])[0]
 
 
 def _put_sample(cp, size, i, val, signed=True):
@@ -179,7 +175,7 @@ def findfit(cp1, cp2):
         aj_lm1 = _get_sample(cp1, size, i + len2 - 1)
 
         sum_aij_2 += aj_lm1**2 - aj_m1**2
-        sum_aij_ri = _sum2(buffer(cp1)[i * size :], cp2, len2)
+        sum_aij_ri = _sum2(memoryview(cp1)[i * size :], cp2, len2)
 
         result = (sum_ri_2 * sum_aij_2 - sum_aij_ri * sum_aij_ri) / sum_aij_2
 
@@ -187,7 +183,7 @@ def findfit(cp1, cp2):
             best_result = result
             best_i = i
 
-    factor = _sum2(buffer(cp1)[best_i * size :], cp2, len2) / sum_ri_2
+    factor = _sum2(memoryview(cp1)[best_i * size :], cp2, len2) / sum_ri_2
 
     return best_i, factor
 
@@ -494,7 +490,7 @@ def ratecv(cp, size, nchannels, inrate, outrate, state, weightA=1, weightB=0):
 
                 # slice off extra bytes
                 trim_index = (out_i * bytes_per_frame) - len(retval)
-                retval = buffer(retval)[:trim_index]
+                retval = memoryview(retval)[:trim_index]
 
                 return (retval, (d, tuple(samps)))
 
